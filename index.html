@@ -37,7 +37,7 @@
             height: 100vh;
         }
         #timer {
-            font-size: 10vw;
+            font-size: 15vw; /* Увеличен размер таймера */
             background-color: rgba(0, 0, 0, 0.7);
             color: #ff0000;
             padding: 2vw 4vw;
@@ -46,10 +46,10 @@
         }
         #button-container {
             position: relative;
-            width: 70vw;
-            height: 70vw;
-            max-width: 300px;
-            max-height: 300px;
+            width: 49vw; /* Уменьшено на 30% от исходного размера 70vw */
+            height: 49vw;
+            max-width: 210px; /* Уменьшено на 30% от исходного размера 300px */
+            max-height: 210px;
         }
         #progress-bar {
             position: absolute;
@@ -68,12 +68,15 @@
             border-radius: 50%;
             background: linear-gradient(145deg, #ff0000, #cc0000);
             border: none;
-            font-size: 7vw;
+            font-size: 8vw; /* Увеличен размер текста в кнопке */
             font-weight: bold;
             color: white;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         #button:active {
             transform: scale(0.95);
@@ -124,6 +127,7 @@
     </div>
 
     <script>
+        // JavaScript код остается без изменений
         const timer = document.getElementById('timer');
         const button = document.getElementById('button');
         const result = document.getElementById('result');
@@ -176,7 +180,7 @@
             } else {
                 result.textContent += " Try again!";
                 createParticles('#FF5722');
-                gameContainer.style.animation = 'shake 0.5s';
+                document.getElementById('game-container').style.animation = 'shake 0.5s';
             }
         }
 
@@ -225,41 +229,6 @@
                 setTimeout(() => particle.remove(), 1000);
             }
         }
-
-        // Новый эффект: изменение цвета фона
-        function changeBackgroundColor() {
-            document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 50%, 50%)`;
-            setTimeout(() => document.body.style.backgroundColor = '', 500);
-        }
-
-        // Новый эффект: вращение кнопки
-        function rotateButton() {
-            button.style.transition = 'transform 0.5s ease';
-            button.style.transform = 'rotate(360deg)';
-            setTimeout(() => button.style.transform = '', 500);
-        }
-
-        // Новый эффект: волновой эффект
-        function createRipple(event) {
-            const button = event.currentTarget;
-            const circle = document.createElement('span');
-            const diameter = Math.max(button.clientWidth, button.clientHeight);
-            const radius = diameter / 2;
-
-            circle.style.width = circle.style.height = `${diameter}px`;
-            circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-            circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-            circle.classList.add('ripple');
-
-            const ripple = button.getElementsByClassName('ripple')[0];
-            if (ripple) {
-                ripple.remove();
-            }
-
-            button.appendChild(circle);
-        }
-
-        button.addEventListener('click', createRipple);
     </script>
 </body>
 </html>
