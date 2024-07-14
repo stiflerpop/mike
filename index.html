@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>10 Seconds Challenge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +14,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             overflow: hidden;
         }
         body {
@@ -28,28 +28,28 @@
             align-items: center;
         }
         #game-container {
-            width: 100%;
-            max-width: 300px;
+            width: 90%;
+            max-width: 400px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             height: 100vh;
-            padding: 20px 0;
         }
         #timer {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 48px;
+            font-size: 10vw;
             background-color: rgba(0, 0, 0, 0.7);
             color: #ff0000;
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 2vw 4vw;
+            border-radius: 2vw;
+            margin-bottom: 5vh;
         }
         #button-container {
             position: relative;
-            width: 200px;
-            height: 200px;
+            width: 70vw;
+            height: 70vw;
+            max-width: 300px;
+            max-height: 300px;
         }
         #progress-bar {
             position: absolute;
@@ -57,6 +57,7 @@
             height: 100%;
             border-radius: 50%;
             background: conic-gradient(#4CAF50 0deg, rgba(240, 240, 240, 0.5) 0deg);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
         }
         #button {
             position: absolute;
@@ -67,28 +68,48 @@
             border-radius: 50%;
             background: linear-gradient(145deg, #ff0000, #cc0000);
             border: none;
-            font-size: 24px;
+            font-size: 7vw;
+            font-weight: bold;
             color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
         }
         #button:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transform: scale(0.95);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
         }
         #result {
-            font-size: 24px;
+            font-size: 5vw;
             text-align: center;
             color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            margin-top: 20px;
-            min-height: 60px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-top: 5vh;
+            min-height: 10vh;
         }
         .particle {
             position: fixed;
             border-radius: 50%;
             pointer-events: none;
             opacity: 0;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
     </style>
 </head>
@@ -97,7 +118,7 @@
         <div id="timer">00:000</div>
         <div id="button-container">
             <div id="progress-bar"></div>
-            <button id="button">Start</button>
+            <button id="button">START</button>
         </div>
         <div id="result"></div>
     </div>
@@ -124,10 +145,11 @@
 
         function startTimer() {
             startTime = new Date().getTime();
-            button.textContent = "Stop";
+            button.textContent = "STOP";
             timerInterval = setInterval(updateTimer, 10);
             isRunning = true;
             result.textContent = "";
+            button.style.animation = 'pulse 0.5s infinite';
         }
 
         function stopTimer() {
@@ -138,19 +160,23 @@
             const milliseconds = timeDiff % 1000;
             
             result.textContent = `Your time: ${seconds}.${milliseconds.toString().padStart(3, '0')}`;
-            button.textContent = "Start";
+            button.textContent = "START";
             isRunning = false;
+            button.style.animation = '';
 
             const accuracy = Math.abs(10000 - timeDiff);
             if (accuracy < 50) {
                 result.textContent += " Perfect! You win!";
                 createParticles('#4CAF50');
+                button.style.animation = 'pulse 0.5s 3';
             } else if (accuracy < 200) {
                 result.textContent += " Close! Try again!";
                 createParticles('#FFC107');
+                button.style.animation = 'shake 0.5s';
             } else {
                 result.textContent += " Try again!";
                 createParticles('#FF5722');
+                gameContainer.style.animation = 'shake 0.5s';
             }
         }
 
@@ -199,6 +225,41 @@
                 setTimeout(() => particle.remove(), 1000);
             }
         }
+
+        // Новый эффект: изменение цвета фона
+        function changeBackgroundColor() {
+            document.body.style.backgroundColor = `hsl(${Math.random() * 360}, 50%, 50%)`;
+            setTimeout(() => document.body.style.backgroundColor = '', 500);
+        }
+
+        // Новый эффект: вращение кнопки
+        function rotateButton() {
+            button.style.transition = 'transform 0.5s ease';
+            button.style.transform = 'rotate(360deg)';
+            setTimeout(() => button.style.transform = '', 500);
+        }
+
+        // Новый эффект: волновой эффект
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement('span');
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+            circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+            circle.classList.add('ripple');
+
+            const ripple = button.getElementsByClassName('ripple')[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+        }
+
+        button.addEventListener('click', createRipple);
     </script>
 </body>
 </html>
