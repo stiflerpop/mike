@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Киска Flights from Tel Aviv</title>
+    <title>Собака Flights from Tel Aviv</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -139,15 +139,17 @@
             const flightsList = document.getElementById('flights-list');
             flightsList.innerHTML = '';
 
-            if (!data || !data.quotes || data.quotes.length === 0) {
+            if (!data || !data.data || !data.data.everywhereDestination || !data.data.everywhereDestination.results) {
                 log('Нет данных о рейсах.');
                 return;
             }
 
-            const sortedFlights = data.quotes.sort((a, b) => a.minPrice - b.minPrice).slice(0, 5);
+            const flights = data.data.everywhereDestination.results;
+            const sortedFlights = flights.sort((a, b) => parseFloat(a.flightQuotes.cheapest.rawPrice) - parseFloat(b.flightQuotes.cheapest.rawPrice)).slice(0, 5);
+
             sortedFlights.forEach(flight => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `Цена: ${flight.minPrice} USD - Откуда: ${flight.outboundLeg.originId} - Куда: ${flight.outboundLeg.destinationId}`;
+                listItem.textContent = `Цена: ${flight.flightQuotes.cheapest.price} - Направление: ${flight.content.location.name}`;
                 flightsList.appendChild(listItem);
             });
         }
