@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дешевые авиабилеты из Тель-Авива</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .flights {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .tomorrow, .weekend {
+            width: 48%;
+            min-width: 300px;
+        }
+        .flight-card {
+            background: #fff;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .flight-card h3 {
+            margin-top: 0;
+        }
+        #loading {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        #logs {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Дешевые авиабилеты из Тель-Авива</h1>
+        <div id="loading">Загрузка данных...</div>
+        <div class="flights">
+            <div class="tomorrow">
+                <h2>На завтра</h2>
+                <div id="tomorrowFlights"></div>
+            </div>
+            <div class="weekend">
+                <h2>На ближайшие выходные</h2>
+                <div id="weekendFlights"></div>
+            </div>
+        </div>
+        <div id="logs">
+            <h2>Логи:</h2>
+            <pre id="logContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d0350244c6';
+        const API_HOST = 'sky-scanner3.p.rapidapi.com';
+
+        function log(message) {
+            const logContent = document.getElementById('logContent');
+            logContent.innerHTML += message + '\n';
+            console.log(message);
+        }
+
+        async function fetchFlights(date) {
+            log(`Поиск рейсов на дату: ${date}`);
+            const url = `https://${API_HOST}/flights/search-everywhere?fromEntityId=TLV&toEntityId=anywhere&date=${date}`;
+            
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            return new Promise((resolve, reject) => {
+                xhr.addEventListener('readystatechange', function () {
+                    if (this.readyState === this.DONE) {
+                        if (this.status === 200) {
+                            resolve(JSON.parse(this.responseText));
+                        } else {
+                            reject(new Error(`HTTP error! status: ${this.status}`));
+                        }
+                    }
+                });
+
+                xhr.open('GET', url);
+                xhr.setRequestHeader('X-RapidAPI-Key', API_KEY);
+                xhr.setRequestHeader('X-RapidAPI-Host', API_HOST);
+
+                xhr.send();
+            });
+        }
+
+        function displayFlights(flightData, elementId) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+
+            log(`Отображение рейсов для ${elementId}`);
+
+            if (!flightData || !flightData.length) {
+                container.innerHTML = '<p>Нет доступных рейсов на эту дату.</p>';
+                return;
+            }
+
+            flightData.slice(0, 3).forEach(flight => {
+                const card = document.createElement('div');
+                card.className = 'flight-card';
+                card.innerHTML = `
+                    <h3>${flight.placeName}</h3>
+                    <p>Цена: ${flight.price.amount} ${flight.price.currency}</p>
+                    <p>Дата: ${flight.date}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function init() {
+            log('Начало инициализации');
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+
+            const weekend = new Date();
+            weekend.setDate(weekend.getDate() + (6 - weekend.getDay() + 7) % 7);
+            const weekendFormatted = weekend.toISOString().split('T')[0];
+
+            log(`Дата для завтрашнего дня: ${tomorrowFormatted}`);
+            log(`Дата для ближайших выходных: ${weekendFormatted}`);
+
+            try {
+                log('Начало запросов к API');
+                const tomorrowFlights = await fetchFlights(tomorrowFormatted);
+                log('Ожидание перед следующим запросом...');
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Задержка в 1 секунду
+                const weekendFlights = await fetchFlights(weekendFormatted);
+
+                log('Запросы к API завершены успешно');
+
+                displayFlights(tomorrowFlights, 'tomorrowFlights');
+                displayFlights(weekendFlights, 'weekendFlights');
+            } catch (error) {
+                log(`Ошибка при получении данных: ${error.message}`);
+                document.getElementById('loading').textContent = 'Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже.';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                log('Инициализация завершена');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
