@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Собака Flights from Tel Aviv</title>
+    <title>НАСОРОГ Flights from Tel Aviv</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,6 +28,13 @@
             margin: 10px 0;
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        #flights-list img {
+            width: 50px;
+            height: auto;
+            margin-right: 15px;
         }
         #logs {
             max-width: 600px;
@@ -41,7 +48,7 @@
         pre {
             white-space: pre-wrap; 
             word-wrap: break-word;
-            color: red; /* Красный цвет для текста логов */
+            color: red;
         }
     </style>
 </head>
@@ -58,13 +65,11 @@
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
         const API_HOST = 'sky-scanner3.p.rapidapi.com';
 
-        // Функция для вывода логов на страницу
         function log(message) {
             const logOutput = document.getElementById('log-output');
             logOutput.textContent += message + '\n';
         }
 
-        // Функция для получения правильного `fromEntityId`
         function getFromEntityId() {
             const xhr = new XMLHttpRequest();
             xhr.withCredentials = true;
@@ -72,12 +77,12 @@
             xhr.addEventListener('readystatechange', function () {
                 if (this.readyState === this.DONE) {
                     log(`Status (auto-complete): ${this.status}`);
-                    log(`Response: ${this.responseText}`); // Выводим полный ответ
+                    log(`Response: ${this.responseText}`);
 
                     if (this.status === 200) {
                         try {
                             const data = JSON.parse(this.responseText);
-                            log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
+                            log(JSON.stringify(data, null, 2));
 
                             if (data.data && data.data.length > 0) {
                                 const fromEntityId = data.data[0].presentation.skyId;
@@ -102,7 +107,6 @@
             xhr.send(null);
         }
 
-        // Функция для получения и отображения самых дешевых рейсов
         function getCheapestFlights(fromEntityId) {
             const xhr = new XMLHttpRequest();
             xhr.withCredentials = true;
@@ -110,12 +114,12 @@
             xhr.addEventListener('readystatechange', function () {
                 if (this.readyState === this.DONE) {
                     log(`Status (flights): ${this.status}`);
-                    log(`Response: ${this.responseText}`); // Выводим полный ответ
+                    log(`Response: ${this.responseText}`);
 
                     if (this.status === 200) {
                         try {
                             const data = JSON.parse(this.responseText);
-                            log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
+                            log(JSON.stringify(data, null, 2));
                             displayFlights(data);
                         } catch (error) {
                             log(`Ошибка парсинга JSON: ${error.message}`);
@@ -134,7 +138,6 @@
             xhr.send(null);
         }
 
-        // Функция для отображения рейсов
         function displayFlights(data) {
             const flightsList = document.getElementById('flights-list');
             flightsList.innerHTML = '';
@@ -149,12 +152,15 @@
 
             sortedFlights.forEach(flight => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `Цена: ${flight.flightQuotes.cheapest.price} - Направление: ${flight.content.location.name}`;
+                const img = document.createElement('img');
+                img.src = flight.content.image.url;
+                img.alt = flight.content.location.name;
+                listItem.appendChild(img);
+                listItem.appendChild(document.createTextNode(`Цена: ${flight.flightQuotes.cheapest.price} - Направление: ${flight.content.location.name}`));
                 flightsList.appendChild(listItem);
             });
         }
 
-        // Запуск получения идентификатора и поиска рейсов
         getFromEntityId();
     </script>
 </body>
