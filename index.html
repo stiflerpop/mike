@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>РЫБА Flights from Tel Aviv</title>
+    <title>Киска Flights from Tel Aviv</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -80,7 +80,7 @@
                             log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
 
                             if (data.data && data.data.length > 0) {
-                                const fromEntityId = data.data[0].navigation.entityId;
+                                const fromEntityId = data.data[0].presentation.skyId;
                                 log(`Получен fromEntityId: ${fromEntityId}`);
                                 getCheapestFlights(fromEntityId);
                             } else {
