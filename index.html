@@ -79,8 +79,8 @@
                             const data = JSON.parse(this.responseText);
                             log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
 
-                            if (data.Places && data.Places.length > 0) {
-                                const fromEntityId = data.Places[0].PlaceId;
+                            if (data.places && data.places.length > 0) {
+                                const fromEntityId = data.places[0].entityId;
                                 log(`Получен fromEntityId: ${fromEntityId}`);
                                 getCheapestFlights(fromEntityId);
                             } else {
@@ -95,7 +95,7 @@
                 }
             });
 
-            xhr.open('GET', 'https://sky-scanner3.p.rapidapi.com/auto-complete?query=Tel%20Aviv');
+            xhr.open('GET', 'https://sky-scanner3.p.rapidapi.com/v1/flights/auto-complete?query=Tel%20Aviv');
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
 
