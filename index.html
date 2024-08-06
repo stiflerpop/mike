@@ -51,6 +51,8 @@
             background-color: #f0f0f0;
             border: 1px solid #ddd;
             border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -80,34 +82,39 @@
 
         function log(message) {
             const logContent = document.getElementById('logContent');
-            logContent.innerHTML += message + '\n';
-            console.log(message);
+            const timestamp = new Date().toISOString();
+            logContent.innerHTML += `[${timestamp}] ${message}\n`;
+            console.log(`[${timestamp}] ${message}`);
         }
 
         async function fetchFlights(date) {
             log(`Поиск рейсов на дату: ${date}`);
             const url = `https://${API_HOST}/flights/search-everywhere?fromEntityId=TLV&toEntityId=anywhere&date=${date}`;
             
-            const xhr = new XMLHttpRequest();
-            xhr.withCredentials = true;
-
-            return new Promise((resolve, reject) => {
-                xhr.addEventListener('readystatechange', function () {
-                    if (this.readyState === this.DONE) {
-                        if (this.status === 200) {
-                            resolve(JSON.parse(this.responseText));
-                        } else {
-                            reject(new Error(`HTTP error! status: ${this.status}`));
-                        }
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-RapidAPI-Key': API_KEY,
+                        'X-RapidAPI-Host': API_HOST
                     }
                 });
 
-                xhr.open('GET', url);
-                xhr.setRequestHeader('X-RapidAPI-Key', API_KEY);
-                xhr.setRequestHeader('X-RapidAPI-Host', API_HOST);
+                log(`Статус ответа: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    log(`Полное тело ответа: ${errorBody}`);
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+                }
 
-                xhr.send();
-            });
+                const data = await response.json();
+                log(`Получены данные о рейсах на ${date}`);
+                return data;
+            } catch (error) {
+                log(`Ошибка при запросе к API: ${error.message}`);
+                throw error;
+            }
         }
 
         function displayFlights(flightData, elementId) {
@@ -125,9 +132,9 @@
                 const card = document.createElement('div');
                 card.className = 'flight-card';
                 card.innerHTML = `
-                    <h3>${flight.placeName}</h3>
-                    <p>Цена: ${flight.price.amount} ${flight.price.currency}</p>
-                    <p>Дата: ${flight.date}</p>
+                    <h3>${flight.placeName || 'Неизвестное направление'}</h3>
+                    <p>Цена: ${flight.price?.amount || 'Нет данных'} ${flight.price?.currency || ''}</p>
+                    <p>Дата: ${flight.date || 'Нет данных'}</p>
                 `;
                 container.appendChild(card);
             });
