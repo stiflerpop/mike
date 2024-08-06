@@ -41,6 +41,7 @@
         pre {
             white-space: pre-wrap; 
             word-wrap: break-word;
+            color: red; /* Красный цвет для текста логов */
         }
     </style>
 </head>
@@ -55,7 +56,7 @@
 
     <script>
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
-        const API_HOST = 'skyscanner-skyscanner-flight-search-v1.p.rapidapi.com';
+        const API_HOST = 'sky-scanner3.p.rapidapi.com';
 
         // Функция для вывода логов на страницу
         function log(message) {
@@ -71,10 +72,12 @@
             xhr.addEventListener('readystatechange', function () {
                 if (this.readyState === this.DONE) {
                     log(`Status (auto-complete): ${this.status}`);
+                    log(`Response: ${this.responseText}`); // Выводим полный ответ
+
                     if (this.status === 200) {
                         try {
                             const data = JSON.parse(this.responseText);
-                            log(JSON.stringify(data, null, 2)); // Логи ответа
+                            log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
 
                             if (data.Places && data.Places.length > 0) {
                                 const fromEntityId = data.Places[0].PlaceId;
@@ -92,7 +95,7 @@
                 }
             });
 
-            xhr.open('GET', 'https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IL/USD/en-US/?query=Tel%20Aviv');
+            xhr.open('GET', 'https://sky-scanner3.p.rapidapi.com/auto-complete?query=Tel%20Aviv');
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
 
@@ -107,10 +110,12 @@
             xhr.addEventListener('readystatechange', function () {
                 if (this.readyState === this.DONE) {
                     log(`Status (flights): ${this.status}`);
+                    log(`Response: ${this.responseText}`); // Выводим полный ответ
+
                     if (this.status === 200) {
                         try {
                             const data = JSON.parse(this.responseText);
-                            log(JSON.stringify(data, null, 2)); // Логи ответа
+                            log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
                             displayFlights(data);
                         } catch (error) {
                             log(`Ошибка парсинга JSON: ${error.message}`);
@@ -121,7 +126,7 @@
                 }
             });
 
-            const endpoint = `https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/IL/USD/en-US/${fromEntityId}/anywhere/2024-08-10`;
+            const endpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&outboundDate=2024-08-10&type=oneway`;
             xhr.open('GET', endpoint);
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
