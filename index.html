@@ -36,22 +36,51 @@
 
     <script>
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
-        const API_HOST = 'sky-scanner3.p.rapidapi.com';
-        const endpoint = 'https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=TLV-sky&country=IL&currency=USD&locale=en-US&outboundDate=2024-08-10';
+        const API_HOST = 'skyscanner-skyscanner-flight-search-v1.p.rapidapi.com';
+        const autoCompleteEndpoint = 'https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IL/USD/en-US/?query=Tel%20Aviv';
 
         function log(message) {
             const logOutput = document.getElementById('log-output');
             logOutput.textContent += message + '\n';
         }
 
-        async function getCheapestFlights() {
+        async function getFromEntityId() {
             const headers = {
                 'x-rapidapi-key': API_KEY,
                 'x-rapidapi-host': API_HOST
             };
 
             try {
-                const response = await fetch(endpoint, { headers });
+                const response = await fetch(autoCompleteEndpoint, { headers });
+                log(`Status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`Ошибка сети: ${response.status}`);
+                }
+                const data = await response.json();
+                log(JSON.stringify(data, null, 2));
+                if (data.Places && data.Places.length > 0) {
+                    return data.Places[0].PlaceId; // Возвращаем первый найденный идентификатор
+                } else {
+                    throw new Error('Не удалось найти идентификатор места.');
+                }
+            } catch (error) {
+                log(`Ошибка: ${error.message}`);
+                throw error;
+            }
+        }
+
+        async function getCheapestFlights() {
+            try {
+                const fromEntityId = await getFromEntityId();
+                log(`Получен fromEntityId: ${fromEntityId}`);
+                const flightsEndpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&country=IL&currency=USD&locale=en-US&outboundDate=2024-08-10`;
+
+                const headers = {
+                    'x-rapidapi-key': API_KEY,
+                    'x-rapidapi-host': API_HOST
+                };
+
+                const response = await fetch(flightsEndpoint, { headers });
                 log(`Status: ${response.status}`);
                 if (!response.ok) {
                     throw new Error(`Ошибка сети: ${response.status}`);
