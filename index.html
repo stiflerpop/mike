@@ -79,8 +79,8 @@
                             const data = JSON.parse(this.responseText);
                             log(JSON.stringify(data, null, 2)); // Логи ответа в виде JSON
 
-                            if (data.Places && data.Places.length > 0) {
-                                const fromEntityId = data.Places[0].PlaceId;
+                            if (data.data && data.data.length > 0) {
+                                const fromEntityId = data.data[0].navigation.entityId;
                                 log(`Получен fromEntityId: ${fromEntityId}`);
                                 getCheapestFlights(fromEntityId);
                             } else {
@@ -126,7 +126,7 @@
                 }
             });
 
-            const endpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&outboundDate=2024-08-10&type=oneway`;
+            const endpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&outboundDate=2024-08-10&type=oneway&currency=USD&locale=en-US`;
             xhr.open('GET', endpoint);
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
@@ -139,15 +139,15 @@
             const flightsList = document.getElementById('flights-list');
             flightsList.innerHTML = '';
 
-            if (!data || !data.Quotes || data.Quotes.length === 0) {
+            if (!data || !data.quotes || data.quotes.length === 0) {
                 log('Нет данных о рейсах.');
                 return;
             }
 
-            const sortedFlights = data.Quotes.sort((a, b) => a.MinPrice - b.MinPrice).slice(0, 5);
+            const sortedFlights = data.quotes.sort((a, b) => a.minPrice - b.minPrice).slice(0, 5);
             sortedFlights.forEach(flight => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `Цена: ${flight.MinPrice} USD - Откуда: ${flight.OutboundLeg.OriginId} - Куда: ${flight.OutboundLeg.DestinationId}`;
+                listItem.textContent = `Цена: ${flight.minPrice} USD - Откуда: ${flight.outboundLeg.originId} - Куда: ${flight.outboundLeg.destinationId}`;
                 flightsList.appendChild(listItem);
             });
         }
