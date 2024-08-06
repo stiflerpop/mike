@@ -55,7 +55,7 @@
 
     <script>
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
-        const API_HOST = 'sky-scanner3.p.rapidapi.com';
+        const API_HOST = 'skyscanner-skyscanner-flight-search-v1.p.rapidapi.com';
 
         // Функция для вывода логов на страницу
         function log(message) {
@@ -92,7 +92,7 @@
                 }
             });
 
-            xhr.open('GET', 'https://sky-scanner3.p.rapidapi.com/auto-complete?query=Tel%20Aviv');
+            xhr.open('GET', 'https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IL/USD/en-US/?query=Tel%20Aviv');
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
 
@@ -121,7 +121,7 @@
                 }
             });
 
-            const endpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&outboundDate=2024-08-10&type=oneway`;
+            const endpoint = `https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/browseroutes/v1.0/IL/USD/en-US/${fromEntityId}/anywhere/2024-08-10`;
             xhr.open('GET', endpoint);
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
