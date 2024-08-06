@@ -26,7 +26,7 @@
     </style>
 </head>
 <body>
-    <h1>5 Самых дешевых билетов из Тель-Авива на ближайшие выходные</h1>
+    <h1>5 Самых дешевых билетов из Тель-Авива на 10 августа</h1>
     <ul id="flights-list"></ul>
 
     <div id="logs">
@@ -37,7 +37,7 @@
     <script>
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
         const API_HOST = 'sky-scanner3.p.rapidapi.com';
-        const endpoint = 'https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?originEntityId=TLV&country=IL&currency=USD&locale=en-US';
+        const endpoint = 'https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?originEntityId=TLV&country=IL&currency=USD&locale=en-US&outboundDate=2024-08-10';
 
         function log(message) {
             const logOutput = document.getElementById('log-output');
@@ -57,6 +57,7 @@
                     throw new Error(`Ошибка сети: ${response.status}`);
                 }
                 const data = await response.json();
+                log(JSON.stringify(data, null, 2)); // Логи ответа
                 displayFlights(data);
             } catch (error) {
                 log(`Ошибка: ${error.message}`);
