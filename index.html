@@ -7,21 +7,40 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
         }
         #flights-list {
             list-style-type: none;
             padding: 0;
+            max-width: 600px;
+            margin: 20px auto;
         }
         #flights-list li {
-            margin: 10px 0;
-            padding: 10px;
+            background-color: #fff;
             border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         #logs {
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            padding: 10px;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
             border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        pre {
+            white-space: pre-wrap; 
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -37,20 +56,57 @@
     <script>
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
         const API_HOST = 'sky-scanner3.p.rapidapi.com';
-        const endpoint = 'https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=TLV-sky&outboundDate=2024-08-10&type=oneway';
 
+        // Функция для вывода логов на страницу
         function log(message) {
             const logOutput = document.getElementById('log-output');
             logOutput.textContent += message + '\n';
         }
 
-        function getCheapestFlights() {
+        // Функция для получения правильного `fromEntityId`
+        function getFromEntityId() {
             const xhr = new XMLHttpRequest();
             xhr.withCredentials = true;
 
             xhr.addEventListener('readystatechange', function () {
                 if (this.readyState === this.DONE) {
-                    log(`Status: ${this.status}`);
+                    log(`Status (auto-complete): ${this.status}`);
+                    if (this.status === 200) {
+                        try {
+                            const data = JSON.parse(this.responseText);
+                            log(JSON.stringify(data, null, 2)); // Логи ответа
+
+                            if (data.Places && data.Places.length > 0) {
+                                const fromEntityId = data.Places[0].PlaceId;
+                                log(`Получен fromEntityId: ${fromEntityId}`);
+                                getCheapestFlights(fromEntityId);
+                            } else {
+                                log('Не удалось найти идентификатор места.');
+                            }
+                        } catch (error) {
+                            log(`Ошибка парсинга JSON: ${error.message}`);
+                        }
+                    } else {
+                        log(`Ошибка сети: ${this.status}`);
+                    }
+                }
+            });
+
+            xhr.open('GET', 'https://sky-scanner3.p.rapidapi.com/auto-complete?query=Tel%20Aviv');
+            xhr.setRequestHeader('x-rapidapi-key', API_KEY);
+            xhr.setRequestHeader('x-rapidapi-host', API_HOST);
+
+            xhr.send(null);
+        }
+
+        // Функция для получения и отображения самых дешевых рейсов
+        function getCheapestFlights(fromEntityId) {
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener('readystatechange', function () {
+                if (this.readyState === this.DONE) {
+                    log(`Status (flights): ${this.status}`);
                     if (this.status === 200) {
                         try {
                             const data = JSON.parse(this.responseText);
@@ -65,6 +121,7 @@
                 }
             });
 
+            const endpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&outboundDate=2024-08-10&type=oneway`;
             xhr.open('GET', endpoint);
             xhr.setRequestHeader('x-rapidapi-key', API_KEY);
             xhr.setRequestHeader('x-rapidapi-host', API_HOST);
@@ -72,6 +129,7 @@
             xhr.send(null);
         }
 
+        // Функция для отображения рейсов
         function displayFlights(data) {
             const flightsList = document.getElementById('flights-list');
             flightsList.innerHTML = '';
@@ -89,7 +147,8 @@
             });
         }
 
-        getCheapestFlights();
+        // Запуск получения идентификатора и поиска рейсов
+        getFromEntityId();
     </script>
 </body>
 </html>
