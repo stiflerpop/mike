@@ -36,61 +36,40 @@
 
     <script>
         const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
-        const API_HOST = 'skyscanner-skyscanner-flight-search-v1.p.rapidapi.com';
-        const autoCompleteEndpoint = 'https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com/apiservices/autosuggest/v1.0/IL/USD/en-US/?query=Tel%20Aviv';
+        const API_HOST = 'sky-scanner3.p.rapidapi.com';
+        const endpoint = 'https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=TLV-sky&outboundDate=2024-08-10&type=oneway';
 
         function log(message) {
             const logOutput = document.getElementById('log-output');
             logOutput.textContent += message + '\n';
         }
 
-        async function getFromEntityId() {
-            const headers = {
-                'x-rapidapi-key': API_KEY,
-                'x-rapidapi-host': API_HOST
-            };
+        function getCheapestFlights() {
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
 
-            try {
-                const response = await fetch(autoCompleteEndpoint, { headers });
-                log(`Status: ${response.status}`);
-                if (!response.ok) {
-                    throw new Error(`Ошибка сети: ${response.status}`);
+            xhr.addEventListener('readystatechange', function () {
+                if (this.readyState === this.DONE) {
+                    log(`Status: ${this.status}`);
+                    if (this.status === 200) {
+                        try {
+                            const data = JSON.parse(this.responseText);
+                            log(JSON.stringify(data, null, 2)); // Логи ответа
+                            displayFlights(data);
+                        } catch (error) {
+                            log(`Ошибка парсинга JSON: ${error.message}`);
+                        }
+                    } else {
+                        log(`Ошибка сети: ${this.status}`);
+                    }
                 }
-                const data = await response.json();
-                log(JSON.stringify(data, null, 2));
-                if (data.Places && data.Places.length > 0) {
-                    return data.Places[0].PlaceId; // Возвращаем первый найденный идентификатор
-                } else {
-                    throw new Error('Не удалось найти идентификатор места.');
-                }
-            } catch (error) {
-                log(`Ошибка: ${error.message}`);
-                throw error;
-            }
-        }
+            });
 
-        async function getCheapestFlights() {
-            try {
-                const fromEntityId = await getFromEntityId();
-                log(`Получен fromEntityId: ${fromEntityId}`);
-                const flightsEndpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&country=IL&currency=USD&locale=en-US&outboundDate=2024-08-10`;
+            xhr.open('GET', endpoint);
+            xhr.setRequestHeader('x-rapidapi-key', API_KEY);
+            xhr.setRequestHeader('x-rapidapi-host', API_HOST);
 
-                const headers = {
-                    'x-rapidapi-key': API_KEY,
-                    'x-rapidapi-host': API_HOST
-                };
-
-                const response = await fetch(flightsEndpoint, { headers });
-                log(`Status: ${response.status}`);
-                if (!response.ok) {
-                    throw new Error(`Ошибка сети: ${response.status}`);
-                }
-                const data = await response.json();
-                log(JSON.stringify(data, null, 2)); // Логи ответа
-                displayFlights(data);
-            } catch (error) {
-                log(`Ошибка: ${error.message}`);
-            }
+            xhr.send(null);
         }
 
         function displayFlights(data) {
