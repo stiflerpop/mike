@@ -1,167 +1,280 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>НАСОРОГ Flights from Tel Aviv</title>
+    <title>Дешевые билеты из Тель-Авива</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f0f4f8;
             color: #333;
+            transition: background-color 0.5s ease;
         }
-        #flights-list {
+        h1 { 
+            text-align: center; 
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        #buttons { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .search-button { 
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            margin: 10px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .search-button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: conic-gradient(from 0deg, #3498db, #2ecc71, #e74c3c, #3498db);
+            z-index: -2;
+            border-radius: 50px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .search-button.active::before {
+            opacity: 1;
+            animation: rotate 2s linear infinite;
+        }
+        .search-button::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            background: inherit;
+            border-radius: 50px;
+            z-index: -1;
+        }
+        .search-button:nth-child(1) { background-color: #3498db; color: white; }
+        .search-button:nth-child(2) { background-color: #2ecc71; color: white; }
+        .search-button:nth-child(3) { background-color: #e74c3c; color: white; }
+        .search-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        #flights { 
+            margin-bottom: 20px; 
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .buy-button { 
+            background-color: #3498db; 
+            border: none; 
+            color: white; 
+            padding: 10px 20px; 
+            text-align: center; 
+            text-decoration: none; 
+            display: inline-block; 
+            font-size: 16px; 
+            margin: 4px 2px; 
+            cursor: pointer; 
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .buy-button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        ul {
             list-style-type: none;
             padding: 0;
-            max-width: 600px;
-            margin: 20px auto;
         }
-        #flights-list li {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin: 10px 0;
+        li {
+            margin-bottom: 20px;
             padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
         }
-        #flights-list img {
-            width: 50px;
-            height: auto;
-            margin-right: 15px;
+        li:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
         }
-        #logs {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        #quote {
+            font-style: italic;
+            text-align: center;
+            margin: 20px 0;
+            color: #34495e;
+            font-size: 1.2em;
+            animation: fadeIn 1s ease-out;
         }
-        pre {
-            white-space: pre-wrap; 
-            word-wrap: break-word;
-            color: red;
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .search-button {
+                width: 100%;
+                margin: 10px 0;
+            }
+            #flights {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>5 Самых дешевых билетов из Тель-Авива на 10 августа</h1>
-    <ul id="flights-list"></ul>
-
-    <div id="logs">
-        <h2>Logs:</h2>
-        <pre id="log-output"></pre>
+    <h1>Дешевые билеты из Тель-Авива</h1>
+    <div id="buttons">
+        <button class="search-button" onclick="searchFlights('tomorrow')">Tomorrow</button>
+        <button class="search-button" onclick="searchFlights('weekend')">Weekend</button>
+        <button class="search-button" onclick="searchFlights('vacation')">Short Vacation</button>
     </div>
+    <div id="quote"></div>
+    <div id="flights">Выберите тип поиска</div>
 
     <script>
-        const API_KEY = '48cdf06df6mshd72e95ab6782ef0p1d727ejsn84d035024dc6';
-        const API_HOST = 'sky-scanner3.p.rapidapi.com';
+        const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
+        const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
 
-        function log(message) {
-            const logOutput = document.getElementById('log-output');
-            logOutput.textContent += message + '\n';
+        const quotes = [
+            "Путешествие в тысячу миль начинается с одного шага. - Лао-цзы",
+            "Мир — это книга, и те, кто не путешествуют, читают только одну страницу. - Святой Августин",
+            "Путешествие — единственная вещь, покупая которую, становишься богаче. - Неизвестный автор",
+            "Лучше увидеть что-то один раз, чем услышать о нем тысячу раз. - Азиатская пословица",
+            "Путешествовать — значит развиваться. - Пьер Бернардо",
+            "Инвестируйте в путешествия — только они делают вас богаче. - Неизвестный автор",
+            "Путешествия учат больше, чем что бы то ни было. - Марк Твен",
+            "Жизнь либо отважное приключение, либо ничего. - Хелен Келлер",
+            "Путешествия делают человека скромным. Вы видите, какое маленькое место занимаете в мире. - Густав Флобер",
+            "Не все, кто странствуют, потерялись. - Дж. Р. Р. Толкин",
+            "Путешествие — это роскошь молодости, если она скромна, и убежище старости, если она богата. - Франсуа де Ларошфуко",
+            "Раз в год отправляйтесь туда, где вы никогда не были раньше. - Далай Лама",
+            "Путешествия — смертельный враг предрассудков. - Марк Твен",
+            "Два путешествия могут научить вас больше, чем одно, которое длится втрое дольше. - Фрэнсис Бэкон",
+            "Лучший способ предсказать будущее — отправиться и создать его. - Авраам Линкольн"
+        ];
+
+        function getRandomQuote() {
+            return quotes[Math.floor(Math.random() * quotes.length)];
         }
 
-        function getFromEntityId() {
-            const xhr = new XMLHttpRequest();
-            xhr.withCredentials = true;
+        function getDateRange(type) {
+            const today = new Date();
+            let fromDate, toDate;
+            switch (type) {
+                case 'tomorrow':
+                    fromDate = new Date(today);
+                    fromDate.setDate(today.getDate() + 1);
+                    toDate = new Date(fromDate);
+                    break;
+                case 'weekend':
+                    fromDate = new Date(today.setDate(today.getDate() + (5 + 7 - today.getDay()) % 7));
+                    toDate = new Date(fromDate);
+                    toDate.setDate(fromDate.getDate() + 2);
+                    break;
+                case 'vacation':
+                    fromDate = new Date(today);
+                    toDate = new Date(today);
+                    toDate.setMonth(today.getMonth() + 1);
+                    break;
+            }
+            return {
+                from: fromDate.toISOString().split('T')[0],
+                to: toDate.toISOString().split('T')[0]
+            };
+        }
 
-            xhr.addEventListener('readystatechange', function () {
-                if (this.readyState === this.DONE) {
-                    log(`Status (auto-complete): ${this.status}`);
-                    log(`Response: ${this.responseText}`);
+        async function searchFlights(type) {
+            const dates = getDateRange(type);
+            const flightsDiv = document.getElementById('flights');
+            flightsDiv.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка...</div>';
+            document.getElementById('quote').textContent = getRandomQuote();
 
-                    if (this.status === 200) {
-                        try {
-                            const data = JSON.parse(this.responseText);
-                            log(JSON.stringify(data, null, 2));
+            const button = event.target;
+            button.classList.add('active');
 
-                            if (data.data && data.data.length > 0) {
-                                const fromEntityId = data.data[0].presentation.skyId;
-                                log(`Получен fromEntityId: ${fromEntityId}`);
-                                getCheapestFlights(fromEntityId);
-                            } else {
-                                log('Не удалось найти идентификатор места.');
-                            }
-                        } catch (error) {
-                            log(`Ошибка парсинга JSON: ${error.message}`);
-                        }
-                    } else {
-                        log(`Ошибка сети: ${this.status}`);
+            try {
+                const response = await axios.get(BASE_URL, {
+                    headers: { 'apikey': API_KEY },
+                    params: {
+                        fly_from: 'TLV',
+                        date_from: dates.from,
+                        date_to: dates.to,
+                        return_from: type !== 'tomorrow' ? dates.from : '',
+                        return_to: type !== 'tomorrow' ? dates.to : '',
+                        nights_in_dst_from: type === 'vacation' ? 3 : (type === 'weekend' ? 2 : ''),
+                        nights_in_dst_to: type === 'vacation' ? 4 : (type === 'weekend' ? 2 : ''),
+                        flight_type: type === 'tomorrow' ? 'oneway' : 'round',
+                        max_stopovers: 2,
+                        curr: 'USD',
+                        sort: 'price',
+                        limit: 5,
+                        partner_market: 'il',
                     }
-                }
-            });
+                });
 
-            xhr.open('GET', 'https://sky-scanner3.p.rapidapi.com/flights/auto-complete?query=Tel%20Aviv');
-            xhr.setRequestHeader('x-rapidapi-key', API_KEY);
-            xhr.setRequestHeader('x-rapidapi-host', API_HOST);
-
-            xhr.send(null);
+                setTimeout(() => {
+                    displayFlights(response.data.data);
+                    button.classList.remove('active');
+                }, 2000);
+            } catch (error) {
+                flightsDiv.innerHTML = 'Произошла ошибка при загрузке рейсов.';
+                button.classList.remove('active');
+            }
         }
 
-        function getCheapestFlights(fromEntityId) {
-            const xhr = new XMLHttpRequest();
-            xhr.withCredentials = true;
-
-            xhr.addEventListener('readystatechange', function () {
-                if (this.readyState === this.DONE) {
-                    log(`Status (flights): ${this.status}`);
-                    log(`Response: ${this.responseText}`);
-
-                    if (this.status === 200) {
-                        try {
-                            const data = JSON.parse(this.responseText);
-                            log(JSON.stringify(data, null, 2));
-                            displayFlights(data);
-                        } catch (error) {
-                            log(`Ошибка парсинга JSON: ${error.message}`);
-                        }
-                    } else {
-                        log(`Ошибка сети: ${this.status}`);
-                    }
-                }
-            });
-
-            const endpoint = `https://sky-scanner3.p.rapidapi.com/flights/search-everywhere?fromEntityId=${fromEntityId}&outboundDate=2024-08-10&type=oneway&currency=USD&locale=en-US`;
-            xhr.open('GET', endpoint);
-            xhr.setRequestHeader('x-rapidapi-key', API_KEY);
-            xhr.setRequestHeader('x-rapidapi-host', API_HOST);
-
-            xhr.send(null);
-        }
-
-        function displayFlights(data) {
-            const flightsList = document.getElementById('flights-list');
-            flightsList.innerHTML = '';
-
-            if (!data || !data.data || !data.data.everywhereDestination || !data.data.everywhereDestination.results) {
-                log('Нет данных о рейсах.');
+        function displayFlights(flights) {
+            const flightsDiv = document.getElementById('flights');
+            if (flights.length === 0) {
+                flightsDiv.innerHTML = 'Рейсы не найдены.';
                 return;
             }
 
-            const flights = data.data.everywhereDestination.results;
-            const sortedFlights = flights.sort((a, b) => parseFloat(a.flightQuotes.cheapest.rawPrice) - parseFloat(b.flightQuotes.cheapest.rawPrice)).slice(0, 5);
-
-            sortedFlights.forEach(flight => {
-                const listItem = document.createElement('li');
-                const img = document.createElement('img');
-                img.src = flight.content.image.url;
-                img.alt = flight.content.location.name;
-                listItem.appendChild(img);
-                listItem.appendChild(document.createTextNode(`Цена: ${flight.flightQuotes.cheapest.price} - Направление: ${flight.content.location.name}`));
-                flightsList.appendChild(listItem);
+            let html = '<ul>';
+            flights.forEach((flight, index) => {
+                html += `
+                    <li style="animation-delay: ${index * 0.1}s;">
+                        <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
+                        Цена: $${flight.price}<br>
+                        Вылет: ${new Date(flight.local_departure).toLocaleString()}<br>
+                        ${flight.route.length > 1 ? `Обратный вылет: ${new Date(flight.route[flight.route.length - 1].local_departure).toLocaleString()}<br>` : ''}
+                        Пересадки: ${Math.floor((flight.route.length - 1) / 2)}<br>
+                        <a href="${flight.deep_link}" target="_blank" class="buy-button">Купить билет</a>
+                    </li>`;
             });
+            html += '</ul>';
+            flightsDiv.innerHTML = html;
         }
-
-        getFromEntityId();
     </script>
 </body>
 </html>
