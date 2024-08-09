@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1Cheap Flights from Tel Aviv</title>
+    <title>5Cheap Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -226,7 +226,7 @@
 <body>
     <h1>Cheap Flights from Tel Aviv</h1>
     <div id="buttons">
-        <button class="search-button" onclick="searchFlights('tomorrow')">Tomorrow</button>
+        <button class="search-button" onclick="searchFlights('today_tomorrow')">Today & Tomorrow</button>
         <button class="search-button" onclick="searchFlights('weekend')">Weekend</button>
         <button class="search-button" onclick="searchFlights('vacation')">Short Vacation</button>
     </div>
@@ -263,13 +263,13 @@
             const today = new Date();
             let fromDate, toDate;
             switch (type) {
-                case 'tomorrow':
+                case 'today_tomorrow':
                     fromDate = new Date(today);
-                    fromDate.setDate(today.getDate() + 1);
-                    toDate = new Date(fromDate);
+                    toDate = new Date(today);
+                    toDate.setDate(today.getDate() + 1);
                     break;
                 case 'weekend':
-                    fromDate = new Date(today.setDate(today.getDate() + (5 + 7 - today.getDay()) % 7));
+                    fromDate = new Date(today.setDate(today.getDate() + (5 - today.getDay() + 7) % 7));
                     toDate = new Date(fromDate);
                     toDate.setDate(fromDate.getDate() + 2);
                     break;
@@ -303,7 +303,7 @@
                         date_to: dates.to,
                         curr: 'USD',
                         sort: 'price',
-                        limit: 50, // Увеличен лимит на количество возвращаемых результатов
+                        limit: 50,
                         partner_market: 'il',
                         fly_to: 'anywhere'
                     }
@@ -331,7 +331,7 @@
             let html = '<ul>';
             flights.forEach((flight, index) => {
                 const departureDate = new Date(flight.local_departure);
-                const returnDate = type !== 'tomorrow' ? new Date(flight.route[1].local_departure) : null;
+                const returnDate = type !== 'today_tomorrow' ? new Date(flight.route[1]?.local_departure) : null;
 
                 html += `
                     <li style="animation-delay: ${index * 0.1}s;">
