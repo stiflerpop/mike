@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Очент билеты из Тель-Авива</title>
+    <title>Cheap Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -11,13 +11,13 @@
             font-family: 'Roboto', sans-serif; 
             margin: 0; 
             padding: 20px; 
-            background-color: #e0f7fa;
+            background-color: #fff3e0;
             color: #333;
             transition: background-color 0.5s ease;
         }
         h1 { 
             text-align: center; 
-            color: #00796b;
+            color: #e65100;
             font-size: 2.5em;
             margin-bottom: 30px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
@@ -40,39 +40,10 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            background-color: #ff9800;
+            color: white;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
-        .search-button::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: conic-gradient(from 0deg, #00796b, #004d40, #00796b);
-            z-index: -2;
-            border-radius: 50px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .search-button.active::before {
-            opacity: 1;
-            animation: rotate 2s linear infinite;
-        }
-        .search-button::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            right: 2px;
-            bottom: 2px;
-            background: inherit;
-            border-radius: 50px;
-            z-index: -1;
-        }
-        .search-button:nth-child(1) { background-color: #00796b; color: white; }
-        .search-button:nth-child(2) { background-color: #004d40; color: white; }
-        .search-button:nth-child(3) { background-color: #004d40; color: white; }
         .search-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
@@ -86,7 +57,7 @@
             transition: all 0.3s ease;
         }
         .buy-button { 
-            background-color: #00796b; 
+            background-color: #e65100; 
             border: none; 
             color: white; 
             padding: 10px 20px; 
@@ -100,7 +71,7 @@
             transition: all 0.3s ease;
         }
         .buy-button:hover {
-            background-color: #004d40;
+            background-color: #bf360c;
             transform: scale(1.05);
         }
         ul {
@@ -110,14 +81,14 @@
         li {
             margin-bottom: 20px;
             padding: 15px;
-            border: 1px solid #b2dfdb;
+            border: 1px solid #ffe0b2;
             border-radius: 10px;
             transition: all 0.3s ease;
             animation: fadeIn 0.5s ease-out;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #e0f2f1;
+            background-color: #ffe0b2;
         }
         li:hover {
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
@@ -130,14 +101,14 @@
         .flight-price {
             font-size: 1.7em;
             font-weight: bold;
-            color: #00796b;
+            color: #e65100;
             margin-left: 20px;
         }
         #quote {
             font-style: italic;
             text-align: center;
             margin: 20px 0;
-            color: #004d40;
+            color: #e65100;
             font-size: 1.3em;
             animation: fadeIn 1s ease-out;
             padding: 15px;
@@ -145,7 +116,16 @@
             border-radius: 15px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
-        @keyframes rotate {
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #e65100;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
             100% {
                 transform: rotate(360deg);
             }
@@ -179,35 +159,35 @@
     </style>
 </head>
 <body>
-    <h1>Дешевые билеты из Тель-Авива</h1>
+    <h1>Cheap Flights from Tel Aviv</h1>
     <div id="buttons">
-        <button class="search-button" onclick="searchFlights('tomorrow')">Завтра</button>
-        <button class="search-button" onclick="searchFlights('weekend')">Выходные</button>
-        <button class="search-button" onclick="searchFlights('vacation')">Короткий отпуск</button>
+        <button class="search-button" onclick="searchFlights('tomorrow')">Tomorrow</button>
+        <button class="search-button" onclick="searchFlights('weekend')">Weekend</button>
+        <button class="search-button" onclick="searchFlights('vacation')">Short Vacation</button>
     </div>
     <div id="quote"></div>
-    <div id="flights">Выберите тип поиска</div>
+    <div id="flights">Choose a search option</div>
 
     <script>
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
 
         const quotes = [
-            "Путешествие в тысячу миль начинается с одного шага. - Лао-цзы",
-            "Мир — это книга, и те, кто не путешествуют, читают только одну страницу. - Святой Августин",
-            "Путешествие — единственная вещь, покупая которую, становишься богаче. - Неизвестный автор",
-            "Лучше увидеть что-то один раз, чем услышать о нем тысячу раз. - Азиатская пословица",
-            "Путешествовать — значит развиваться. - Пьер Бернардо",
-            "Инвестируйте в путешествия — только они делают вас богаче. - Неизвестный автор",
-            "Путешествия учат больше, чем что бы то ни было. - Марк Твен",
-            "Жизнь либо отважное приключение, либо ничего. - Хелен Келлер",
-            "Путешествия делают человека скромным. Вы видите, какое маленькое место занимаете в мире. - Густав Флобер",
-            "Не все, кто странствуют, потерялись. - Дж. Р. Р. Толкин",
-            "Путешествие — это роскошь молодости, если она скромна, и убежище старости, если она богата. - Франсуа де Ларошфуко",
-            "Раз в год отправляйтесь туда, где вы никогда не были раньше. - Далай Лама",
-            "Путешествия — смертельный враг предрассудков. - Марк Твен",
-            "Два путешествия могут научить вас больше, чем одно, которое длится втрое дольше. - Фрэнсис Бэкон",
-            "Лучший способ предсказать будущее — отправиться и создать его. - Авраам Линкольн"
+            "A journey of a thousand miles begins with a single step. - Lao Tzu",
+            "The world is a book, and those who do not travel read only one page. - Saint Augustine",
+            "Travel is the only thing you buy that makes you richer. - Unknown",
+            "Better to see something once than hear about it a thousand times. - Asian Proverb",
+            "To travel is to evolve. - Pierre Bernardo",
+            "Invest in travel - it’s the only thing that makes you richer. - Unknown",
+            "Travel teaches more than anything else. - Mark Twain",
+            "Life is either a daring adventure or nothing at all. - Helen Keller",
+            "Travel makes one modest. You see what a tiny place you occupy in the world. - Gustave Flaubert",
+            "Not all those who wander are lost. - J.R.R. Tolkien",
+            "Travel is the luxury of the young, if modest, and the refuge of the old, if rich. - Francois de La Rochefoucauld",
+            "Once a year, go someplace you’ve never been before. - Dalai Lama",
+            "Travel is fatal to prejudice. - Mark Twain",
+            "Two journeys teach you more than one three times as long. - Francis Bacon",
+            "The best way to predict the future is to go and create it. - Abraham Lincoln"
         ];
 
         function getRandomQuote() {
@@ -243,7 +223,7 @@
         async function searchFlights(type) {
             const dates = getDateRange(type);
             const flightsDiv = document.getElementById('flights');
-            flightsDiv.innerHTML = '<div style="text-align: center; padding: 20px;">Загрузка...</div>';
+            flightsDiv.innerHTML = '<div class="loader"></div>';
             document.getElementById('quote').textContent = getRandomQuote();
 
             const button = event.target;
@@ -278,7 +258,7 @@
                     button.classList.remove('active');
                 }, 2000);
             } catch (error) {
-                flightsDiv.innerHTML = 'Произошла ошибка при загрузке рейсов.';
+                flightsDiv.innerHTML = 'An error occurred while loading flights.';
                 button.classList.remove('active');
             }
         }
@@ -286,7 +266,7 @@
         function displayFlights(flights, type) {
             const flightsDiv = document.getElementById('flights');
             if (flights.length === 0) {
-                flightsDiv.innerHTML = 'Рейсы не найдены.';
+                flightsDiv.innerHTML = 'No flights found.';
                 return;
             }
 
@@ -299,12 +279,12 @@
                     <li style="animation-delay: ${index * 0.1}s;">
                         <div class="flight-details">
                             <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
-                            Вылет: ${departureDate.toLocaleString()}<br>
-                            ${returnDate ? `Возвращение: ${returnDate.toLocaleString()}<br>` : ''}
-                            Пересадки: ${flight.route.length - 2}
+                            Departure: ${departureDate.toLocaleString()}<br>
+                            ${returnDate ? `Return: ${returnDate.toLocaleString()}<br>` : ''}
+                            Stops: ${flight.route.length - 2}
                         </div>
                         <div class="flight-price">$${flight.price}</div>
-                        <a href="${flight.deep_link}" target="_blank" class="buy-button">Купить билет</a>
+                        <a href="${flight.deep_link}" target="_blank" class="buy-button">Buy Ticket</a>
                     </li>`;
             });
             html += '</ul>';
