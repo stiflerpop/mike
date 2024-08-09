@@ -11,13 +11,13 @@
             font-family: 'Roboto', sans-serif; 
             margin: 0; 
             padding: 20px; 
-            background-color: #fff3e0;
+            background-color: #e0f7fa;
             color: #333;
             transition: background-color 0.5s ease;
         }
         h1 { 
             text-align: center; 
-            color: #e65100;
+            color: #1565c0;
             font-size: 2.5em;
             margin-bottom: 30px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
@@ -40,7 +40,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            background-color: #ff9800;
+            background-color: #1e88e5;
             color: white;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
@@ -57,7 +57,7 @@
             transition: all 0.3s ease;
         }
         .buy-button { 
-            background-color: #e65100; 
+            background-color: #1e88e5; 
             border: none; 
             color: white; 
             padding: 10px 20px; 
@@ -71,7 +71,7 @@
             transition: all 0.3s ease;
         }
         .buy-button:hover {
-            background-color: #bf360c;
+            background-color: #0d47a1;
             transform: scale(1.05);
         }
         ul {
@@ -81,14 +81,14 @@
         li {
             margin-bottom: 20px;
             padding: 15px;
-            border: 1px solid #ffe0b2;
+            border: 1px solid #bbdefb;
             border-radius: 10px;
             transition: all 0.3s ease;
             animation: fadeIn 0.5s ease-out;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #ffe0b2;
+            background-color: #e3f2fd;
         }
         li:hover {
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
@@ -101,14 +101,14 @@
         .flight-price {
             font-size: 1.7em;
             font-weight: bold;
-            color: #e65100;
+            color: #1565c0;
             margin-left: 20px;
         }
         #quote {
             font-style: italic;
             text-align: center;
             margin: 20px 0;
-            color: #e65100;
+            color: #1565c0;
             font-size: 1.3em;
             animation: fadeIn 1s ease-out;
             padding: 15px;
@@ -118,7 +118,7 @@
         }
         .loader {
             border: 5px solid #f3f3f3;
-            border-top: 5px solid #e65100;
+            border-top: 5px solid #1e88e5;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -155,6 +155,71 @@
                 margin-left: 0;
                 margin-top: 10px;
             }
+        }
+        /* New Animation: Plane Icon on Load */
+        @keyframes planeFly {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        .plane-icon {
+            font-size: 2em;
+            color: #1e88e5;
+            position: absolute;
+            top: 10px;
+            left: 0;
+            animation: planeFly 3s linear infinite;
+        }
+        /* New Feature: Tooltip for Prices */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #1e88e5;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; 
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* New Feature: Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 25%, transparent 25%) -50px 0/ 100px 100px,
+                        linear-gradient(225deg, rgba(255,255,255,0.3) 25%, transparent 25%) -50px 0/ 100px 100px,
+                        linear-gradient(315deg, rgba(255,255,255,0.3) 25%, transparent 25%),
+                        linear-gradient(45deg, rgba(255,255,255,0.3) 25%, transparent 25%);
+            z-index: -1;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -245,7 +310,7 @@
                         max_stopovers: 0,
                         curr: 'USD',
                         sort: 'price',
-                        limit: 10,
+                        limit: 20, // увеличен лимит для включения большего количества рейсов
                         partner_market: 'il',
                         fly_to: 'anywhere',
                         ret_from_diff_city: false,
@@ -270,6 +335,8 @@
                 return;
             }
 
+            flights.sort((a, b) => a.price - b.price); // Сортировка по цене для отображения самых дешевых билетов
+
             let html = '<ul>';
             flights.forEach((flight, index) => {
                 const departureDate = new Date(flight.local_departure);
@@ -283,7 +350,9 @@
                             ${returnDate ? `Return: ${returnDate.toLocaleString()}<br>` : ''}
                             Stops: ${flight.route.length - 2}
                         </div>
-                        <div class="flight-price">$${flight.price}</div>
+                        <div class="flight-price tooltip">$${flight.price}
+                            <span class="tooltiptext">This is the total price including all fees.</span>
+                        </div>
                         <a href="${flight.deep_link}" target="_blank" class="buy-button">Buy Ticket</a>
                     </li>`;
             });
@@ -291,5 +360,6 @@
             flightsDiv.innerHTML = html;
         }
     </script>
+    <div class="plane-icon">✈️</div>
 </body>
 </html>
