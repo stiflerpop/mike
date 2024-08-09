@@ -3,18 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сочные билеты из Тель-Авива</title>
+    <title>Дешевые билеты из Тель-Авива</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        /* ... (предыдущие стили остаются без изменений) ... */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f0f4f8;
+            color: #333;
+            transition: background-color 0.5s ease;
+        }
+        h1 { 
+            text-align: center; 
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        #buttons { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .search-button { 
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            margin: 10px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .search-button::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: conic-gradient(from 0deg, #3498db, #2ecc71, #e74c3c, #3498db);
+            z-index: -2;
+            border-radius: 50px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .search-button.active::before {
+            opacity: 1;
+            animation: rotate 2s linear infinite;
+        }
+        .search-button::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            background: inherit;
+            border-radius: 50px;
+            z-index: -1;
+        }
+        .search-button:nth-child(1) { background-color: #3498db; color: white; }
+        .search-button:nth-child(2) { background-color: #2ecc71; color: white; }
+        .search-button:nth-child(3) { background-color: #e74c3c; color: white; }
+        .search-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        #flights { 
+            margin-bottom: 20px; 
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .buy-button { 
+            background-color: #3498db; 
+            border: none; 
+            color: white; 
+            padding: 10px 20px; 
+            text-align: center; 
+            text-decoration: none; 
+            display: inline-block; 
+            font-size: 16px; 
+            margin: 4px 2px; 
+            cursor: pointer; 
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .buy-button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+        li:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+        }
+        #quote {
+            font-style: italic;
+            text-align: center;
+            margin: 20px 0;
+            color: #34495e;
+            font-size: 1.2em;
+            animation: fadeIn 1s ease-out;
+        }
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .search-button {
+                width: 100%;
+                margin: 10px 0;
+            }
+            #flights {
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>Дешевые билеты из Тель-Авива</h1>
     <div id="buttons">
-        <button class="search-button" onclick="searchFlights('tomorrow')"><span>Tomorrow</span></button>
-        <button class="search-button" onclick="searchFlights('weekend')"><span>Weekend</span></button>
-        <button class="search-button" onclick="searchFlights('vacation')"><span>Short Vacation</span></button>
+        <button class="search-button" onclick="searchFlights('tomorrow')">Tomorrow</button>
+        <button class="search-button" onclick="searchFlights('weekend')">Weekend</button>
+        <button class="search-button" onclick="searchFlights('vacation')">Short Vacation</button>
     </div>
     <div id="quote"></div>
     <div id="flights">Выберите тип поиска</div>
@@ -23,7 +166,53 @@
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
 
-        // ... (предыдущие функции остаются без изменений) ...
+        const quotes = [
+            "Путешествие в тысячу миль начинается с одного шага. - Лао-цзы",
+            "Мир — это книга, и те, кто не путешествуют, читают только одну страницу. - Святой Августин",
+            "Путешествие — единственная вещь, покупая которую, становишься богаче. - Неизвестный автор",
+            "Лучше увидеть что-то один раз, чем услышать о нем тысячу раз. - Азиатская пословица",
+            "Путешествовать — значит развиваться. - Пьер Бернардо",
+            "Инвестируйте в путешествия — только они делают вас богаче. - Неизвестный автор",
+            "Путешествия учат больше, чем что бы то ни было. - Марк Твен",
+            "Жизнь либо отважное приключение, либо ничего. - Хелен Келлер",
+            "Путешествия делают человека скромным. Вы видите, какое маленькое место занимаете в мире. - Густав Флобер",
+            "Не все, кто странствуют, потерялись. - Дж. Р. Р. Толкин",
+            "Путешествие — это роскошь молодости, если она скромна, и убежище старости, если она богата. - Франсуа де Ларошфуко",
+            "Раз в год отправляйтесь туда, где вы никогда не были раньше. - Далай Лама",
+            "Путешествия — смертельный враг предрассудков. - Марк Твен",
+            "Два путешествия могут научить вас больше, чем одно, которое длится втрое дольше. - Фрэнсис Бэкон",
+            "Лучший способ предсказать будущее — отправиться и создать его. - Авраам Линкольн"
+        ];
+
+        function getRandomQuote() {
+            return quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        function getDateRange(type) {
+            const today = new Date();
+            let fromDate, toDate;
+            switch (type) {
+                case 'tomorrow':
+                    fromDate = new Date(today);
+                    fromDate.setDate(today.getDate() + 1);
+                    toDate = new Date(fromDate);
+                    break;
+                case 'weekend':
+                    fromDate = new Date(today.setDate(today.getDate() + (5 + 7 - today.getDay()) % 7));
+                    toDate = new Date(fromDate);
+                    toDate.setDate(fromDate.getDate() + 2);
+                    break;
+                case 'vacation':
+                    fromDate = new Date(today);
+                    toDate = new Date(today);
+                    toDate.setDate(fromDate.getDate() + 30);
+                    break;
+            }
+            return {
+                from: fromDate.toISOString().split('T')[0],
+                to: toDate.toISOString().split('T')[0]
+            };
+        }
 
         async function searchFlights(type) {
             const dates = getDateRange(type);
@@ -51,7 +240,6 @@
                         sort: 'price',
                         limit: 10,
                         partner_market: 'il',
-                        one_for_city: 1,
                     }
                 });
 
@@ -82,18 +270,12 @@
 
                 html += `
                     <li style="animation-delay: ${index * 0.1}s;">
-                        <div class="flight-details">
-                            <div class="flight-info">
-                                <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
-                                Вылет: ${departureDate.toLocaleString()}<br>
-                                ${returnDate ? `Обратно: из ${returnRoute.cityFrom} (${returnRoute.flyFrom})<br>
-                                                ${returnDate.toLocaleString()}<br>` : ''}
-                                Пересадки: ${Math.floor((flight.route.length - 1) / 2)}
-                            </div>
-                            <div class="flight-price">
-                                $${flight.price}
-                            </div>
-                        </div>
+                        <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
+                        Вылет: ${departureDate.toLocaleString()}<br>
+                        ${returnDate ? `Обратно: из ${returnRoute.cityFrom} (${returnRoute.flyFrom})<br>
+                                        ${returnDate.toLocaleString()}<br>` : ''}
+                        Цена: $${flight.price}<br>
+                        Пересадки: ${Math.floor((flight.route.length - 1) / 2)}<br>
                         <a href="${flight.deep_link}" target="_blank" class="buy-button">Купить билет</a>
                     </li>`;
             });
