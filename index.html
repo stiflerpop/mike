@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheap Flights from Tel Aviv</title>
+    <title>1Cheap Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -301,20 +301,11 @@
                         fly_from: 'TLV',
                         date_from: dates.from,
                         date_to: dates.to,
-                        return_from: type !== 'tomorrow' ? dates.from : '',
-                        return_to: type !== 'tomorrow' ? dates.to : '',
-                        nights_in_dst_from: type === 'vacation' ? 3 : (type === 'weekend' ? 2 : ''),
-                        nights_in_dst_to: type === 'vacation' ? 7 : (type === 'weekend' ? 2 : ''),
-                        flight_type: type === 'tomorrow' ? 'oneway' : 'round',
-                        one_for_city: 1,
-                        max_stopovers: 0,
                         curr: 'USD',
                         sort: 'price',
-                        limit: 20, // увеличен лимит для включения большего количества рейсов
+                        limit: 50, // Увеличен лимит на количество возвращаемых результатов
                         partner_market: 'il',
-                        fly_to: 'anywhere',
-                        ret_from_diff_city: false,
-                        ret_to_diff_city: false
+                        fly_to: 'anywhere'
                     }
                 });
 
