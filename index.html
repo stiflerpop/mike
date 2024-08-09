@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Дешевые билеты из Тель-Авива</title>
+    <title>Cупер Дешевые билеты из Тель-Авива</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -20,6 +20,7 @@
             color: #2c3e50;
             font-size: 2.5em;
             margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
         #buttons { 
             display: flex; 
@@ -110,13 +111,27 @@
             margin-bottom: 20px;
             padding: 15px;
             border: 1px solid #e0e0e0;
-            border-radius: 5px;
+            border-radius: 10px;
             transition: all 0.3s ease;
             animation: fadeIn 0.5s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
         }
         li:hover {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transform: translateY(-3px);
+            background-color: #ffffff;
+        }
+        .flight-details {
+            flex: 1;
+        }
+        .flight-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-left: 20px;
         }
         #quote {
             font-style: italic;
@@ -125,6 +140,10 @@
             color: #34495e;
             font-size: 1.2em;
             animation: fadeIn 1s ease-out;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         @keyframes rotate {
             100% {
@@ -148,6 +167,13 @@
             }
             #flights {
                 padding: 10px;
+            }
+            li {
+                flex-direction: column;
+            }
+            .flight-price {
+                margin-left: 0;
+                margin-top: 10px;
             }
         }
     </style>
@@ -233,9 +259,10 @@
                         return_from: type !== 'tomorrow' ? dates.from : '',
                         return_to: type !== 'tomorrow' ? dates.to : '',
                         nights_in_dst_from: type === 'vacation' ? 3 : (type === 'weekend' ? 2 : ''),
-                        nights_in_dst_to: type === 'vacation' ? 4 : (type === 'weekend' ? 2 : ''),
+                        nights_in_dst_to: type === 'vacation' ? 7 : (type === 'weekend' ? 2 : ''),
                         flight_type: type === 'tomorrow' ? 'oneway' : 'round',
-                        max_stopovers: 2,
+                        one_for_city: 1,
+                        max_stopovers: 0,
                         curr: 'USD',
                         sort: 'price',
                         limit: 10,
@@ -262,20 +289,18 @@
 
             let html = '<ul>';
             flights.forEach((flight, index) => {
-                const departureRoute = flight.route.find(r => r.flyFrom === 'TLV');
-                const returnRoute = type !== 'tomorrow' ? flight.route.find(r => r.flyTo === 'TLV') : null;
-
-                const departureDate = new Date(departureRoute.local_departure);
-                const returnDate = returnRoute ? new Date(returnRoute.local_departure) : null;
+                const departureDate = new Date(flight.local_departure);
+                const returnDate = type !== 'tomorrow' ? new Date(flight.route[1].local_departure) : null;
 
                 html += `
                     <li style="animation-delay: ${index * 0.1}s;">
-                        <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
-                        Вылет: ${departureDate.toLocaleString()}<br>
-                        ${returnDate ? `Обратно: из ${returnRoute.cityFrom} (${returnRoute.flyFrom})<br>
-                                        ${returnDate.toLocaleString()}<br>` : ''}
-                        Цена: $${flight.price}<br>
-                        Пересадки: ${Math.floor((flight.route.length - 1) / 2)}<br>
+                        <div class="flight-details">
+                            <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
+                            Вылет: ${departureDate.toLocaleString()}<br>
+                            ${returnDate ? `Возвращение: ${returnDate.toLocaleString()}<br>` : ''}
+                            Пересадки: ${flight.route.length - 2}
+                        </div>
+                        <div class="flight-price">$${flight.price}</div>
                         <a href="${flight.deep_link}" target="_blank" class="buy-button">Купить билет</a>
                     </li>`;
             });
