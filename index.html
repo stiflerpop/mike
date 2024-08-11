@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5Cheap Flights from Tel Aviv</title>
+    <title>1 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -47,6 +47,7 @@
         .search-button:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            background-color: #1565c0;
         }
         #flights { 
             margin-bottom: 20px; 
@@ -221,7 +222,41 @@
             z-index: -1;
             opacity: 0.5;
         }
-    </style>
+    .info-button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.back-button {
+    background-color: #f44336;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.destination-info {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+	</style>
 </head>
 <body>
     <h1>Cheap Flights from Tel Aviv</h1>
@@ -236,6 +271,7 @@
     <script>
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
+        let lastSearchType = '';
 
         const quotes = [
             "A journey of a thousand miles begins with a single step. - Lao Tzu",
@@ -264,9 +300,9 @@
             let fromDate, toDate;
             switch (type) {
                 case 'today_tomorrow':
-                    fromDate = new Date(today);
-                    toDate = new Date(today);
-                    toDate.setDate(today.getDate() + 1);
+                    fromDate = new Date();
+                    toDate = new Date();
+                    toDate.setDate(fromDate.getDate() + 1);
                     break;
                 case 'weekend':
                     fromDate = new Date(today.setDate(today.getDate() + (5 - today.getDay() + 7) % 7));
@@ -286,6 +322,7 @@
         }
 
         async function searchFlights(type) {
+            lastSearchType = type;
             const dates = getDateRange(type);
             const flightsDiv = document.getElementById('flights');
             flightsDiv.innerHTML = '<div class="loader"></div>';
@@ -299,13 +336,19 @@
                     headers: { 'apikey': API_KEY },
                     params: {
                         fly_from: 'TLV',
+                        fly_to: 'anywhere',
                         date_from: dates.from,
                         date_to: dates.to,
+                        return_from: dates.from,
+                        return_to: dates.to,
+                        max_stopovers: 2,
+                        flight_type: 'round',
+                        nights_in_dst_from: type === 'weekend' ? 2 : (type === 'vacation' ? 3 : undefined),
+                        nights_in_dst_to: type === 'weekend' ? 3 : (type === 'vacation' ? 7 : undefined),
                         curr: 'USD',
                         sort: 'price',
                         limit: 50,
-                        partner_market: 'il',
-                        fly_to: 'anywhere'
+                        partner_market: 'il'
                     }
                 });
 
@@ -326,29 +369,156 @@
                 return;
             }
 
-            flights.sort((a, b) => a.price - b.price); // Сортировка по цене для отображения самых дешевых билетов
+            flights.sort((a, b) => a.price - b.price);
 
             let html = '<ul>';
             flights.forEach((flight, index) => {
-                const departureDate = new Date(flight.local_departure);
-                const returnDate = type !== 'today_tomorrow' ? new Date(flight.route[1]?.local_departure) : null;
+                if (flight.route.length >= 2 && flight.route[0].flyTo === flight.route[flight.route.length - 1].flyFrom) {
+                    const departureDate = new Date(flight.route[0].local_departure);
+                    const returnDate = new Date(flight.route[flight.route.length - 1].local_arrival);
+                    const nights = Math.ceil((returnDate - departureDate) / (1000 * 60 * 60 * 24));
 
-                html += `
-                    <li style="animation-delay: ${index * 0.1}s;">
-                        <div class="flight-details">
-                            <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
-                            Departure: ${departureDate.toLocaleString()}<br>
-                            ${returnDate ? `Return: ${returnDate.toLocaleString()}<br>` : ''}
-                            Stops: ${flight.route.length - 2}
-                        </div>
-                        <div class="flight-price tooltip">$${flight.price}
-                            <span class="tooltiptext">This is the total price including all fees.</span>
-                        </div>
-                        <a href="${flight.deep_link}" target="_blank" class="buy-button">Buy Ticket</a>
-                    </li>`;
+                    const stops = flight.route.length > 2 ? flight.route.length - 2 : 0;
+
+                    html += `
+                        <li style="animation-delay: ${index * 0.1}s;">
+                            <div class="flight-details">
+                                <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
+                                Departure: ${departureDate.toLocaleString()}<br>
+                                Return: ${returnDate.toLocaleString()}<br>
+                                Stops: ${stops}<br>
+                                ${type !== 'today_tomorrow' ? `Nights: ${nights}<br>` : ''}
+                            </div>
+                            <div class="flight-price tooltip">$${flight.price}
+                                <span class="tooltiptext">This is the total price including all fees.</span>
+                            </div>
+                            <a href="${flight.deep_link}" target="_blank" class="buy-button">Buy Ticket</a>
+                            <button onclick="getDestinationInfo('${flight.cityTo}', '${flight.countryTo.name}', '${departureDate.toISOString().split('T')[0]}', '${returnDate.toISOString().split('T')[0]}', ${nights})" class="info-button">Information</button>
+                        </li>`;
+                }
             });
             html += '</ul>';
             flightsDiv.innerHTML = html;
+        }
+
+        async function getDestinationInfo(city, country, startDate, endDate, nights) {
+    const flightsDiv = document.getElementById('flights');
+    flightsDiv.innerHTML = '<div class="loader"></div>';
+
+    const message = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
+
+    const OPENAI_API_KEY = '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';
+    const ASSISTANT_ID = 'asst_tuI0gM695nWcPyYThOeDa96F';
+
+    try {
+        // Создаем новый тред
+        const threadResponse = await axios.post('https://api.openai.com/v2/threads', {}, {
+            headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+                'OpenAI-Beta': 'assistants=v2'
+            }
+        });
+
+        const threadId = threadResponse.data.id;
+
+        // Добавляем сообщение в тред
+        await axios.post(`https://api.openai.com/v2/threads/${threadId}/messages`, {
+            role: "user",
+            content: message
+        }, {
+            headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+                'OpenAI-Beta': 'assistants=v2'
+            }
+        });
+
+        // Запускаем выполнение
+        const runResponse = await axios.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
+            assistant_id: ASSISTANT_ID
+        }, {
+            headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+                'OpenAI-Beta': 'assistants=v2'
+            }
+        });
+
+        const runId = runResponse.data.id;
+
+        // Ожидаем завершения выполнения
+        let runStatus;
+        let retries = 0;
+        const maxRetries = 5;
+        do {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // увеличиваем интервал до 2 секунд
+            try {
+                const statusResponse = await axios.get(`https://api.openai.com/v2/threads/${threadId}/runs/${runId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                        'OpenAI-Beta': 'assistants=v2'
+                    }
+                });
+                runStatus = statusResponse.data.status;
+                retries = 0; // сбрасываем счетчик попыток при успешном запросе
+            } catch (error) {
+                console.error('Error checking run status:', error);
+                retries++;
+                if (retries >= maxRetries) {
+                    throw new Error('Max retries reached while checking run status');
+                }
+            }
+        } while (runStatus === 'in_progress' && retries < maxRetries);
+
+        // Получаем сообщения
+        const messagesResponse = await axios.get(`https://api.openai.com/v2/threads/${threadId}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'OpenAI-Beta': 'assistants=v2'
+            }
+        });
+
+        const assistantMessage = messagesResponse.data.data.find(msg => msg.role === 'assistant');
+        if (assistantMessage && assistantMessage.content && assistantMessage.content.length > 0) {
+            const info = assistantMessage.content[0].text.value;
+            displayDestinationInfo(info);
+        } else {
+            throw new Error('No valid response from assistant');
+        }
+    } catch (error) {
+        console.error('Error fetching destination info:', error);
+        let errorMessage = 'An error occurred while loading destination information: ';
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                console.error('Error response:', error.response.data);
+                errorMessage += `${error.message}. Response: ${JSON.stringify(error.response.data)}`;
+            } else if (error.request) {
+                console.error('Error request:', error.request);
+                errorMessage += 'The request was made but no response was received. Please check your internet connection.';
+            } else {
+                errorMessage += error.message;
+            }
+        } else {
+            errorMessage += error.message;
+        }
+        flightsDiv.innerHTML = errorMessage;
+    }
+}
+
+        function displayDestinationInfo(info) {
+            const flightsDiv = document.getElementById('flights');
+            flightsDiv.innerHTML = `
+                <div class="destination-info">
+                    <h2>Destination Information</h2>
+                    ${info}
+                </div>
+                <button onclick="showFlights()" class="back-button">Back to Flights</button>
+            `;
+        }
+
+        function showFlights() {
+            searchFlights(lastSearchType);
         }
     </script>
     <div class="plane-icon">✈️</div>
