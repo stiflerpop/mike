@@ -322,85 +322,83 @@
         }
 
         async function searchFlights(type) {
-            lastSearchType = type;
-            const dates = getDateRange(type);
-            const flightsDiv = document.getElementById('flights');
-            flightsDiv.innerHTML = '<div class="loader"></div>';
-            document.getElementById('quote').textContent = getRandomQuote();
+    lastSearchType = type;
+    const dates = getDateRange(type);
+    const flightsDiv = document.getElementById('flights');
+    flightsDiv.innerHTML = '<div class="loader"></div>';
+    document.getElementById('quote').textContent = getRandomQuote();
 
-            const button = event.target;
-            button.classList.add('active');
+    const button = event.target;
+    button.classList.add('active');
 
-            try {
-                const response = await axios.get(BASE_URL, {
-                    headers: { 'apikey': API_KEY },
-                    params: {
-                        fly_from: 'TLV',
-                        fly_to: 'anywhere',
-                        date_from: dates.from,
-                        date_to: dates.to,
-                        return_from: dates.from,
-                        return_to: dates.to,
-                        max_stopovers: 2,
-                        flight_type: 'round',
-                        nights_in_dst_from: type === 'weekend' ? 2 : (type === 'vacation' ? 3 : undefined),
-                        nights_in_dst_to: type === 'weekend' ? 3 : (type === 'vacation' ? 7 : undefined),
-                        curr: 'USD',
-                        sort: 'price',
-                        limit: 50,
-                        partner_market: 'il'
-                    }
-                });
-
-                setTimeout(() => {
-                    displayFlights(response.data.data, type);
-                    button.classList.remove('active');
-                }, 2000);
-            } catch (error) {
-                flightsDiv.innerHTML = 'An error occurred while loading flights.';
-                button.classList.remove('active');
+    try {
+        const response = await axios.get(BASE_URL, {
+            headers: { 'apikey': API_KEY },
+            params: {
+                fly_from: 'TLV',
+                fly_to: 'anywhere',
+                date_from: dates.from,
+                date_to: dates.to,
+                return_from: dates.from,
+                return_to: dates.to,
+                max_stopovers: 2,
+                flight_type: 'round',
+                nights_in_dst_from: type === 'weekend' ? 2 : (type === 'vacation' ? 3 : undefined),
+                nights_in_dst_to: type === 'weekend' ? 3 : (type === 'vacation' ? 7 : undefined),
+                curr: 'USD',
+                sort: 'price',
+                limit: 50,
+                partner_market: 'il'
             }
-        }
+        });
+
+        displayFlights(response.data.data, type);
+    } catch (error) {
+        console.error('Error fetching flights:', error);
+        flightsDiv.innerHTML = 'An error occurred while loading flights. Please try again later.';
+    } finally {
+        button.classList.remove('active');
+    }
+}
 
         function displayFlights(flights, type) {
-            const flightsDiv = document.getElementById('flights');
-            if (flights.length === 0) {
-                flightsDiv.innerHTML = 'No flights found.';
-                return;
-            }
+    const flightsDiv = document.getElementById('flights');
+    if (flights.length === 0) {
+        flightsDiv.innerHTML = 'No flights found.';
+        return;
+    }
 
-            flights.sort((a, b) => a.price - b.price);
+    flights.sort((a, b) => a.price - b.price);
 
-            let html = '<ul>';
-            flights.forEach((flight, index) => {
-                if (flight.route.length >= 2 && flight.route[0].flyTo === flight.route[flight.route.length - 1].flyFrom) {
-                    const departureDate = new Date(flight.route[0].local_departure);
-                    const returnDate = new Date(flight.route[flight.route.length - 1].local_arrival);
-                    const nights = Math.ceil((returnDate - departureDate) / (1000 * 60 * 60 * 24));
+    let html = '<ul>';
+    flights.forEach((flight, index) => {
+        if (flight.route.length >= 2 && flight.route[0].flyTo === flight.route[flight.route.length - 1].flyFrom) {
+            const departureDate = new Date(flight.route[0].local_departure);
+            const returnDate = new Date(flight.route[flight.route.length - 1].local_arrival);
+            const nights = Math.ceil((returnDate - departureDate) / (1000 * 60 * 60 * 24));
 
-                    const stops = flight.route.length > 2 ? flight.route.length - 2 : 0;
+            const stops = flight.route.length > 2 ? flight.route.length - 2 : 0;
 
-                    html += `
-                        <li style="animation-delay: ${index * 0.1}s;">
-                            <div class="flight-details">
-                                <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
-                                Departure: ${departureDate.toLocaleString()}<br>
-                                Return: ${returnDate.toLocaleString()}<br>
-                                Stops: ${stops}<br>
-                                ${type !== 'today_tomorrow' ? `Nights: ${nights}<br>` : ''}
-                            </div>
-                            <div class="flight-price tooltip">$${flight.price}
-                                <span class="tooltiptext">This is the total price including all fees.</span>
-                            </div>
-                            <a href="${flight.deep_link}" target="_blank" class="buy-button">Buy Ticket</a>
-                            <button onclick="getDestinationInfo('${flight.cityTo}', '${flight.countryTo.name}', '${departureDate.toISOString().split('T')[0]}', '${returnDate.toISOString().split('T')[0]}', ${nights})" class="info-button">Information</button>
-                        </li>`;
-                }
-            });
-            html += '</ul>';
-            flightsDiv.innerHTML = html;
+            html += `
+                <li style="animation-delay: ${index * 0.1}s;">
+                    <div class="flight-details">
+                        <strong>${flight.cityTo}</strong> (${flight.flyTo})<br>
+                        Departure: ${departureDate.toLocaleString()}<br>
+                        Return: ${returnDate.toLocaleString()}<br>
+                        Stops: ${stops}<br>
+                        ${type !== 'today_tomorrow' ? `Nights: ${nights}<br>` : ''}
+                    </div>
+                    <div class="flight-price tooltip">$${flight.price}
+                        <span class="tooltiptext">This is the total price including all fees.</span>
+                    </div>
+                    <a href="${flight.deep_link}" target="_blank" class="buy-button">Buy Ticket</a>
+                    <button onclick="getDestinationInfo('${flight.cityTo}', '${flight.countryTo.name}', '${departureDate.toISOString().split('T')[0]}', '${returnDate.toISOString().split('T')[0]}', ${nights})" class="info-button">Information</button>
+                </li>`;
         }
-
+    });
+    html += '</ul>';
+    flightsDiv.innerHTML = html;
+}
         async function getDestinationInfo(city, country, startDate, endDate, nights) {
     const flightsDiv = document.getElementById('flights');
     flightsDiv.innerHTML = '<div class="loader"></div>';
