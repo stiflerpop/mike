@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>6666 Flights from Tel Aviv</title>
+    <title>МММ Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -412,42 +412,36 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
 
     const message = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
-    const OPENAI_API_KEY = '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';
     const ASSISTANT_ID = 'asst_aCSqgXxRZb8EB3vraQB64Nxa';
+    const PROXY_URL = 'http://45.133.216.252:3000/proxy-to-openai';
 
     try {
         // Создаем новый тред
-        const threadResponse = await axiosInstance.post('https://api.openai.com/v2/threads', {}, {
-            headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-                'OpenAI-Beta': 'assistants=v2'
-            }
+        const threadResponse = await axios.post(PROXY_URL, {
+            method: 'POST',
+            path: '/threads',
+            data: {}
         });
 
         const threadId = threadResponse.data.id;
         console.log("Thread created:", threadId);
 
         // Добавляем сообщение в тред
-        await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/messages`, {
-            role: "user",
-            content: message
-        }, {
-            headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-                'OpenAI-Beta': 'assistants=v2'
+        await axios.post(PROXY_URL, {
+            method: 'POST',
+            path: `/threads/${threadId}/messages`,
+            data: {
+                role: "user",
+                content: message
             }
         });
 
         // Запускаем выполнение
-        const runResponse = await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
-            assistant_id: ASSISTANT_ID,
-        }, {
-            headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-                'OpenAI-Beta': 'assistants=v2'
+        const runResponse = await axios.post(PROXY_URL, {
+            method: 'POST',
+            path: `/threads/${threadId}/runs`,
+            data: {
+                assistant_id: ASSISTANT_ID
             }
         });
 
@@ -461,11 +455,9 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         do {
             await new Promise(resolve => setTimeout(resolve, 2000));
             try {
-                const statusResponse = await axiosInstance.get(`https://api.openai.com/v2/threads/${threadId}/runs/${runId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                        'OpenAI-Beta': 'assistants=v2'
-                    }
+                const statusResponse = await axios.post(PROXY_URL, {
+                    method: 'GET',
+                    path: `/threads/${threadId}/runs/${runId}`
                 });
                 runStatus = statusResponse.data.status;
                 console.log("Run status:", runStatus);
@@ -480,11 +472,9 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         } while (runStatus === 'in_progress' && retries < maxRetries);
 
         // Получаем сообщения
-        const messagesResponse = await axiosInstance.get(`https://api.openai.com/v2/threads/${threadId}/messages`, {
-            headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                'OpenAI-Beta': 'assistants=v2'
-            }
+        const messagesResponse = await axios.post(PROXY_URL, {
+            method: 'GET',
+            path: `/threads/${threadId}/messages`
         });
 
         console.log("Messages received:", messagesResponse.data);
