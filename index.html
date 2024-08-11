@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1 Flights from Tel Aviv</title>
+    <title>5 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -410,9 +410,14 @@
     const OPENAI_API_KEY = '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';
     const ASSISTANT_ID = 'asst_tuI0gM695nWcPyYThOeDa96F';
 
+    // Создаем экземпляр axios с увеличенным тайм-аутом
+    const axiosInstance = axios.create({
+        timeout: 30000 // 30 секунд
+    });
+
     try {
         // Создаем новый тред
-        const threadResponse = await axios.post('https://api.openai.com/v2/threads', {}, {
+        const threadResponse = await axiosInstance.post('https://api.openai.com/v2/threads', {}, {
             headers: {
                 'Authorization': `Bearer ${OPENAI_API_KEY}`,
                 'Content-Type': 'application/json',
@@ -423,7 +428,7 @@
         const threadId = threadResponse.data.id;
 
         // Добавляем сообщение в тред
-        await axios.post(`https://api.openai.com/v2/threads/${threadId}/messages`, {
+        await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/messages`, {
             role: "user",
             content: message
         }, {
@@ -435,7 +440,7 @@
         });
 
         // Запускаем выполнение
-        const runResponse = await axios.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
+        const runResponse = await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
             assistant_id: ASSISTANT_ID
         }, {
             headers: {
@@ -450,11 +455,11 @@
         // Ожидаем завершения выполнения
         let runStatus;
         let retries = 0;
-        const maxRetries = 5;
+        const maxRetries = 10;
         do {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // увеличиваем интервал до 2 секунд
+            await new Promise(resolve => setTimeout(resolve, 3000)); // увеличиваем интервал до 3 секунд
             try {
-                const statusResponse = await axios.get(`https://api.openai.com/v2/threads/${threadId}/runs/${runId}`, {
+                const statusResponse = await axiosInstance.get(`https://api.openai.com/v2/threads/${threadId}/runs/${runId}`, {
                     headers: {
                         'Authorization': `Bearer ${OPENAI_API_KEY}`,
                         'OpenAI-Beta': 'assistants=v2'
@@ -472,9 +477,9 @@
         } while (runStatus === 'in_progress' && retries < maxRetries);
 
         // Получаем сообщения
-        const messagesResponse = await axios.get(`https://api.openai.com/v2/threads/${threadId}/messages`, {
+        const messagesResponse = await axiosInstance.get(`https://api.openai.com/v2/threads/${threadId}/messages`, {
             headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Authorization': `Bearer ${OPENAI_API_KEY}',
                 'OpenAI-Beta': 'assistants=v2'
             }
         });
@@ -495,7 +500,7 @@
                 errorMessage += `${error.message}. Response: ${JSON.stringify(error.response.data)}`;
             } else if (error.request) {
                 console.error('Error request:', error.request);
-                errorMessage += 'The request was made but no response was received. Please check your internet connection.';
+                errorMessage += 'The request was made but no response was received. Please check your internet connection and try again. If the problem persists, the service might be temporarily unavailable.';
             } else {
                 errorMessage += error.message;
             }
