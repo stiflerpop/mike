@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XXXX Flights from Tel Aviv</title>
+    <title>6666 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -401,7 +401,12 @@
             flightsDiv.innerHTML = html;
         }
 
-        async function getDestinationInfo(city, country, startDate, endDate, nights) {
+        const axiosInstance = axios.create({
+    timeout: 60000 // увеличиваем тайм-аут до 60 секунд
+});
+
+async function getDestinationInfo(city, country, startDate, endDate, nights) {
+    console.log("getDestinationInfo called with:", { city, country, startDate, endDate, nights });
     const flightsDiv = document.getElementById('flights');
     flightsDiv.innerHTML = '<div class="loader"></div>';
 
@@ -412,7 +417,7 @@
 
     try {
         // Создаем новый тред
-        const threadResponse = await axios.post('https://api.openai.com/v2/threads', {}, {
+        const threadResponse = await axiosInstance.post('https://api.openai.com/v2/threads', {}, {
             headers: {
                 'Authorization': `Bearer ${OPENAI_API_KEY}`,
                 'Content-Type': 'application/json',
@@ -421,9 +426,10 @@
         });
 
         const threadId = threadResponse.data.id;
+        console.log("Thread created:", threadId);
 
         // Добавляем сообщение в тред
-        await axios.post(`https://api.openai.com/v2/threads/${threadId}/messages`, {
+        await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/messages`, {
             role: "user",
             content: message
         }, {
@@ -435,7 +441,7 @@
         });
 
         // Запускаем выполнение
-        const runResponse = await axios.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
+        const runResponse = await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
             assistant_id: ASSISTANT_ID
         }, {
             headers: {
@@ -446,22 +452,24 @@
         });
 
         const runId = runResponse.data.id;
+        console.log("Run started:", runId);
 
         // Ожидаем завершения выполнения
         let runStatus;
         let retries = 0;
-        const maxRetries = 5;
+        const maxRetries = 10;
         do {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // увеличиваем интервал до 2 секунд
+            await new Promise(resolve => setTimeout(resolve, 2000));
             try {
-                const statusResponse = await axios.get(`https://api.openai.com/v2/threads/${threadId}/runs/${runId}`, {
+                const statusResponse = await axiosInstance.get(`https://api.openai.com/v2/threads/${threadId}/runs/${runId}`, {
                     headers: {
                         'Authorization': `Bearer ${OPENAI_API_KEY}`,
                         'OpenAI-Beta': 'assistants=v2'
                     }
                 });
                 runStatus = statusResponse.data.status;
-                retries = 0; // сбрасываем счетчик попыток при успешном запросе
+                console.log("Run status:", runStatus);
+                retries = 0;
             } catch (error) {
                 console.error('Error checking run status:', error);
                 retries++;
@@ -472,12 +480,14 @@
         } while (runStatus === 'in_progress' && retries < maxRetries);
 
         // Получаем сообщения
-        const messagesResponse = await axios.get(`https://api.openai.com/v2/threads/${threadId}/messages`, {
+        const messagesResponse = await axiosInstance.get(`https://api.openai.com/v2/threads/${threadId}/messages`, {
             headers: {
                 'Authorization': `Bearer ${OPENAI_API_KEY}`,
                 'OpenAI-Beta': 'assistants=v2'
             }
         });
+
+        console.log("Messages received:", messagesResponse.data);
 
         const assistantMessage = messagesResponse.data.data.find(msg => msg.role === 'assistant');
         if (assistantMessage && assistantMessage.content && assistantMessage.content.length > 0) {
@@ -487,7 +497,7 @@
             throw new Error('No valid response from assistant');
         }
     } catch (error) {
-        console.error('Error fetching destination info:', error);
+        console.error('Detailed error:', error);
         let errorMessage = 'An error occurred while loading destination information: ';
         if (axios.isAxiosError(error)) {
             if (error.response) {
@@ -495,7 +505,7 @@
                 errorMessage += `${error.message}. Response: ${JSON.stringify(error.response.data)}`;
             } else if (error.request) {
                 console.error('Error request:', error.request);
-                errorMessage += 'The request was made but no response was received. Please check your internet connection.';
+                errorMessage += 'The request was made but no response was received. Please check your internet connection and try again.';
             } else {
                 errorMessage += error.message;
             }
@@ -505,7 +515,6 @@
         flightsDiv.innerHTML = errorMessage;
     }
 }
-
         function displayDestinationInfo(info) {
             const flightsDiv = document.getElementById('flights');
             flightsDiv.innerHTML = `
