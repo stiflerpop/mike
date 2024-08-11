@@ -412,8 +412,8 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
 
     const message = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
-    const OPENAI_API_KEY = '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';
-    const ASSISTANT_ID = 'asst_tuI0gM695nWcPyYThOeDa96F';
+    const OPENAI_API_KEY = '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';
+    const ASSISTANT_ID = 'asst_aCSqgXxRZb8EB3vraQB64Nxa';
 
     try {
         // Создаем новый тред
@@ -442,7 +442,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
 
         // Запускаем выполнение
         const runResponse = await axiosInstance.post(`https://api.openai.com/v2/threads/${threadId}/runs`, {
-            assistant_id: ASSISTANT_ID
+            assistant_id: ASSISTANT_ID,
         }, {
             headers: {
                 'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -457,7 +457,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Ожидаем завершения выполнения
         let runStatus;
         let retries = 0;
-        const maxRetries = 10;
+        const maxRetries = 30;
         do {
             await new Promise(resolve => setTimeout(resolve, 2000));
             try {
