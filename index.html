@@ -4,8 +4,9 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>11 Flights from Tel Aviv</title>
+    <title>1000 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cohere.ai/js/cohere.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
         body { 
@@ -262,14 +263,19 @@
 <body>
     <h1>Cheap Flights from Tel Aviv</h1>
     <div id="buttons">
-        <button class="search-button" onclick="searchFlights('today_tomorrow')">Today & Tomorrow</button>
-        <button class="search-button" onclick="searchFlights('weekend')">Weekend</button>
-        <button class="search-button" onclick="searchFlights('vacation')">Short Vacation</button>
+        <button class="search-button" onclick="searchFlights('today_tomorrow', event)">Today & Tomorrow</button>
+        <button class="search-button" onclick="searchFlights('weekend', event)">Weekend</button>
+        <button class="search-button" onclick="searchFlights('vacation', event)">Short Vacation</button>
     </div>
     <div id="quote"></div>
     <div id="flights">Choose a search option</div>
 
     <script>
+        window.onload = function() {
+            const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD'; // Ваш реальный ключ
+            cohere.init(COHERE_API_KEY);
+        };
+
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
         let lastSearchType = '';
@@ -322,7 +328,7 @@
             };
         }
 
-        async function searchFlights(type, event = null) {
+        async function searchFlights(type, event) {
             lastSearchType = type;
             const dates = getDateRange(type);
             const flightsDiv = document.getElementById('flights');
@@ -408,10 +414,6 @@
             console.log("getDestinationInfo called with:", { city, country, startDate, endDate, nights });
             const flightsDiv = document.getElementById('flights');
             flightsDiv.innerHTML = '<div class="loader"></div>';
-
-            const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD';
-            const cohere = window.cohere;
-            cohere.init(COHERE_API_KEY);
 
             const prompt = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
