@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>555 Flights from Tel Aviv</title>
+    <title>666 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -420,7 +420,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Создаем новый тред
         const threadResponse = await axios.post(PROXY_URL, {
             method: 'POST',
-            path: '/v2/threads',
+            path: '/v1/threads',
             data: {}
         });
 
@@ -430,7 +430,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Добавляем сообщение в тред
         await axios.post(PROXY_URL, {
             method: 'POST',
-            path: `/v2/threads/${threadId}/messages`,
+            path: `/v1/threads/${threadId}/messages`,
             data: {
                 role: "user",
                 content: message
@@ -440,7 +440,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Запускаем выполнение
         const runResponse = await axios.post(PROXY_URL, {
             method: 'POST',
-            path: `/v2/threads/${threadId}/runs`,
+            path: `/v1/threads/${threadId}/runs`,
             data: {
                 assistant_id: ASSISTANT_ID
             }
@@ -458,7 +458,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
             try {
                 const statusResponse = await axios.post(PROXY_URL, {
                     method: 'GET',
-                    path: `/v2/threads/${threadId}/runs/${runId}`
+                    path: `/v1/threads/${threadId}/runs/${runId}`
                 });
                 runStatus = statusResponse.data.status;
                 console.log("Run status:", runStatus);
@@ -475,7 +475,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Получаем сообщения
         const messagesResponse = await axios.post(PROXY_URL, {
             method: 'GET',
-            path: `/v2/threads/${threadId}/messages`
+            path: `/v1/threads/${threadId}/messages`
         });
 
         console.log("Messages received:", messagesResponse.data);
