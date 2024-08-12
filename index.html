@@ -4,9 +4,8 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1760 Flights from Tel Aviv</title>
+    <title>10 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cohere.ai/js/cohere.js"></script> <!-- Подключение библиотеки Cohere -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
         body { 
@@ -271,11 +270,6 @@
     <div id="flights">Choose a search option</div>
 
     <script>
-        window.onload = function() {
-            const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD'; // Ваш реальный ключ
-            cohere.init(COHERE_API_KEY);
-        };
-
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
         let lastSearchType = '';
@@ -415,20 +409,29 @@
             const flightsDiv = document.getElementById('flights');
             flightsDiv.innerHTML = '<div class="loader"></div>';
 
+            const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD';
             const prompt = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
             try {
-                const response = await cohere.generate({
-                    model: 'command',
-                    prompt: prompt,
-                    max_tokens: 300,
-                    temperature: 0.7,
-                    k: 0,
-                    stop_sequences: [],
-                    return_likelihoods: 'NONE'
+                const response = await fetch('https://api.cohere.ai/v1/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${COHERE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'command',
+                        prompt: prompt,
+                        max_tokens: 300,
+                        temperature: 0.7,
+                        k: 0,
+                        stop_sequences: [],
+                        return_likelihoods: 'NONE'
+                    })
                 });
 
-                const generatedText = response.generations[0].text;
+                const data = await response.json();
+                const generatedText = data.generations[0].text;
                 displayDestinationInfo(generatedText);
             } catch (error) {
                 console.error('Error:', error);
