@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9999 Flights from Tel Aviv</title>
+    <title>10 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -272,21 +272,7 @@
     <script>
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
-        const PROXY_URL = 'https://openai-proxy-k1rg.onrender.com/proxy-to-openai';
-	let lastSearchType = '';
-	async function checkProxyServer() {
-    try {
-        const response = await axios.post(PROXY_URL, {
-            method: 'GET',
-            path: '/v1/models'  // Это простой запрос к API OpenAI для получения списка моделей
-        });
-        console.log("Proxy server is working. OpenAI models:", response.data);
-        alert("Proxy server is working correctly!");
-    } catch (error) {
-        console.error("Error checking proxy server:", error);
-        alert("Error checking proxy server. Check console for details.");
-    }
-}
+        let lastSearchType = '';
 
 // Добавьте эту строку, чтобы проверить прокси-сервер при загрузке страницы
 window.onload = checkProxyServer;
@@ -429,106 +415,40 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
     const flightsDiv = document.getElementById('flights');
     flightsDiv.innerHTML = '<div class="loader"></div>';
 
-    const logDiv = document.createElement('div');
-    logDiv.id = 'logDiv';
-    logDiv.style.whiteSpace = 'pre-wrap';
-    flightsDiv.appendChild(logDiv);
+    const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD';
+    const cohere = window.cohere;
+    cohere.init(COHERE_API_KEY);
 
-    function log(message) {
-        console.log(message);
-        logDiv.textContent += message + '\n';
-    }
-
-    const message = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
-
-    const ASSISTANT_ID = 'asst_aCSqgXxRZb8EB3vraQB64Nxa';
+    const prompt = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
     try {
-        log(`Sending request to create thread...`);
-        log(`PROXY_URL: ${PROXY_URL}`);
-        // Создаем новый тред
-        const threadResponse = await axios.post(PROXY_URL, {
-            method: 'POST',
-            path: '/v1/threads',
-            data: {}
+        const response = await cohere.generate({
+            model: 'command',
+            prompt: prompt,
+            max_tokens: 300,
+            temperature: 0.7,
+            k: 0,
+            stop_sequences: [],
+            return_likelihoods: 'NONE'
         });
-        const threadId = threadResponse.data.id;
-        log(`Thread created: ${threadId}`);
 
-        log(`Sending message to thread...`);
-        // Добавляем сообщение в тред
-        await axios.post(PROXY_URL, {
-            method: 'POST',
-            path: `/v1/threads/${threadId}/messages`,
-            data: {
-                role: "user",
-                content: message
-            }
-        });
-        log(`Message sent to thread`);
-
-        log(`Starting run...`);
-        // Запускаем выполнение
-        const runResponse = await axios.post(PROXY_URL, {
-            method: 'POST',
-            path: `/v1/threads/${threadId}/runs`,
-            data: {
-                assistant_id: ASSISTANT_ID
-            }
-        });
-        const runId = runResponse.data.id;
-        log(`Run started: ${runId}`);
-
-        // Ожидаем завершения выполнения
-        let runStatus;
-        let retries = 0;
-        const maxRetries = 30;
-        do {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            try {
-                log(`Checking run status...`);
-                const statusResponse = await axios.post(PROXY_URL, {
-                    method: 'GET',
-                    path: `/v1/threads/${threadId}/runs/${runId}`
-                });
-                runStatus = statusResponse.data.status;
-                log(`Run status: ${runStatus}`);
-                retries = 0;
-            } catch (error) {
-                log(`Error checking run status: ${error}`);
-                retries++;
-                if (retries >= maxRetries) {
-                    throw new Error('Max retries reached while checking run status');
-                }
-            }
-        } while (runStatus === 'in_progress' && retries < maxRetries);
-
-        log(`Retrieving messages...`);
-        // Получаем сообщения
-        const messagesResponse = await axios.post(PROXY_URL, {
-            method: 'GET',
-            path: `/v1/threads/${threadId}/messages`
-        });
-        log(`Messages received`);
-
-        const assistantMessage = messagesResponse.data.data.find(msg => msg.role === 'assistant');
-        if (assistantMessage && assistantMessage.content && assistantMessage.content.length > 0) {
-            const info = assistantMessage.content[0].text.value;
-            displayDestinationInfo(info);
-        } else {
-            throw new Error('No valid response from assistant');
-        }
+        const generatedText = response.generations[0].text;
+        displayDestinationInfo(generatedText);
     } catch (error) {
-        log(`Error occurred: ${error.message}`);
-        if (axios.isAxiosError(error)) {
-            if (error.response) {
-                log(`Error response: ${JSON.stringify(error.response.data)}`);
-            } else if (error.request) {
-                log(`Error request: ${error.request}`);
-            }
-        }
-        flightsDiv.innerHTML += `<div>An error occurred. Please check the console for more details.</div>`;
+        console.error('Error:', error);
+        flightsDiv.innerHTML = `An error occurred: ${error.message}`;
     }
+}
+
+function displayDestinationInfo(info) {
+    const flightsDiv = document.getElementById('flights');
+    flightsDiv.innerHTML = `
+        <div class="destination-info">
+            <h2>Destination Information</h2>
+            ${info}
+        </div>
+        <button onclick="showFlights()" class="back-button">Back to Flights</button>
+    `;
 }
         function displayDestinationInfo(info) {
             const flightsDiv = document.getElementById('flights');
