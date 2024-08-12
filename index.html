@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>111 Flights from Tel Aviv</title>
+    <title>555 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -272,7 +272,8 @@
     <script>
         const API_KEY = 'HymeBoRxtoITn816qE08K5ZrKptUIahu';
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
-        let lastSearchType = '';
+        const PROXY_URL = 'https://openai-proxy-k1rg.onrender.com/proxy-to-openai';
+	let lastSearchType = '';
 
         const quotes = [
             "A journey of a thousand miles begins with a single step. - Lao Tzu",
@@ -414,13 +415,12 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
     const message = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
     const ASSISTANT_ID = 'asst_aCSqgXxRZb8EB3vraQB64Nxa';
-    const PROXY_URL = 'http://45.133.216.252:3000/proxy-to-openai';
 
     try {
         // Создаем новый тред
         const threadResponse = await axios.post(PROXY_URL, {
             method: 'POST',
-            path: '/threads',
+            path: '/v2/threads',
             data: {}
         });
 
@@ -430,7 +430,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Добавляем сообщение в тред
         await axios.post(PROXY_URL, {
             method: 'POST',
-            path: `/threads/${threadId}/messages`,
+            path: `/v2/threads/${threadId}/messages`,
             data: {
                 role: "user",
                 content: message
@@ -440,7 +440,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Запускаем выполнение
         const runResponse = await axios.post(PROXY_URL, {
             method: 'POST',
-            path: `/threads/${threadId}/runs`,
+            path: `/v2/threads/${threadId}/runs`,
             data: {
                 assistant_id: ASSISTANT_ID
             }
@@ -458,7 +458,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
             try {
                 const statusResponse = await axios.post(PROXY_URL, {
                     method: 'GET',
-                    path: `/threads/${threadId}/runs/${runId}`
+                    path: `/v2/threads/${threadId}/runs/${runId}`
                 });
                 runStatus = statusResponse.data.status;
                 console.log("Run status:", runStatus);
@@ -475,7 +475,7 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         // Получаем сообщения
         const messagesResponse = await axios.post(PROXY_URL, {
             method: 'GET',
-            path: `/threads/${threadId}/messages`
+            path: `/v2/threads/${threadId}/messages`
         });
 
         console.log("Messages received:", messagesResponse.data);
