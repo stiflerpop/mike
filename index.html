@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10 Flights from Tel Aviv</title>
+    <title>112 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -405,39 +405,49 @@
         }
 
         async function getDestinationInfo(city, country, startDate, endDate, nights) {
-            console.log("getDestinationInfo called with:", { city, country, startDate, endDate, nights });
-            const flightsDiv = document.getElementById('flights');
-            flightsDiv.innerHTML = '<div class="loader"></div>';
+    console.log("getDestinationInfo called with:", { city, country, startDate, endDate, nights });
+    const flightsDiv = document.getElementById('flights');
+    flightsDiv.innerHTML = '<div class="loader"></div>';
 
-            const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD';
-            const prompt = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
+    const COHERE_API_KEY = 'cAyuC71ahgYQ8TQZxwNpQm4INPcfIyHnGelV9pPD';
+    
+    // Новый промпт с более структурированным запросом
+    const prompt = `Предоставь информацию о городе ${city}, ${country} на русском языке, используя следующую структуру:
+    
+1️⃣ Название города: ${city}
+2️⃣ Погода на даты: ${startDate} - ${endDate} 
+3️⃣ Основные достопримечательности:
+4️⃣ Валюта: 
+5️⃣ Примеры национальной кухни: 
+6️⃣ Короткий маршрут на 1 день для туриста, включая интересные места и рестораны.
 
-            try {
-                const response = await fetch('https://api.cohere.ai/v1/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${COHERE_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'command',
-                        prompt: prompt,
-                        max_tokens: 300,
-                        temperature: 0.7,
-                        k: 0,
-                        stop_sequences: [],
-                        return_likelihoods: 'NONE'
-                    })
-                });
+Используй эмоджи для обозначения пунктов и предоставь информацию аккуратно и структурировано.`;
 
-                const data = await response.json();
-                const generatedText = data.generations[0].text;
-                displayDestinationInfo(generatedText);
-            } catch (error) {
-                console.error('Error:', error);
-                flightsDiv.innerHTML = `An error occurred: ${error.message}`;
-            }
-        }
+    try {
+        const response = await fetch('https://api.cohere.ai/v1/generate', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${COHERE_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'command',
+                prompt: prompt,
+                temperature: 0.7,
+                k: 0,
+                stop_sequences: [],
+                return_likelihoods: 'NONE'
+            })
+        });
+
+        const data = await response.json();
+        const generatedText = data.generations[0].text;
+        displayDestinationInfo(generatedText);
+    } catch (error) {
+        console.error('Error:', error);
+        flightsDiv.innerHTML = `An error occurred: ${error.message}`;
+    }
+}
 
         function displayDestinationInfo(info) {
             const flightsDiv = document.getElementById('flights');
