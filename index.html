@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>888 Flights from Tel Aviv</title>
+    <title>9999 Flights from Tel Aviv</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -274,8 +274,25 @@
         const BASE_URL = 'https://api.tequila.kiwi.com/v2/search';
         const PROXY_URL = 'https://openai-proxy-k1rg.onrender.com/proxy-to-openai';
 	let lastSearchType = '';
+	async function checkProxyServer() {
+    try {
+        const response = await axios.post(PROXY_URL, {
+            method: 'GET',
+            path: '/v1/models'  // Это простой запрос к API OpenAI для получения списка моделей
+        });
+        console.log("Proxy server is working. OpenAI models:", response.data);
+        alert("Proxy server is working correctly!");
+    } catch (error) {
+        console.error("Error checking proxy server:", error);
+        alert("Error checking proxy server. Check console for details.");
+    }
+}
 
-        const quotes = [
+// Добавьте эту строку, чтобы проверить прокси-сервер при загрузке страницы
+window.onload = checkProxyServer;
+        
+	
+	const quotes = [
             "A journey of a thousand miles begins with a single step. - Lao Tzu",
             "The world is a book, and those who do not travel read only one page. - Saint Augustine",
             "Travel is the only thing you buy that makes you richer. - Unknown",
@@ -412,21 +429,33 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
     const flightsDiv = document.getElementById('flights');
     flightsDiv.innerHTML = '<div class="loader"></div>';
 
+    const logDiv = document.createElement('div');
+    logDiv.id = 'logDiv';
+    logDiv.style.whiteSpace = 'pre-wrap';
+    flightsDiv.appendChild(logDiv);
+
+    function log(message) {
+        console.log(message);
+        logDiv.textContent += message + '\n';
+    }
+
     const message = `Предоставь краткую, но информативную справку о ${city}, ${country} для туриста, планирующего поездку с ${startDate} по ${endDate} (${nights} ночей).`;
 
     const ASSISTANT_ID = 'asst_aCSqgXxRZb8EB3vraQB64Nxa';
 
     try {
+        log(`Sending request to create thread...`);
+        log(`PROXY_URL: ${PROXY_URL}`);
         // Создаем новый тред
         const threadResponse = await axios.post(PROXY_URL, {
             method: 'POST',
             path: '/v1/threads',
             data: {}
         });
-
         const threadId = threadResponse.data.id;
-        console.log("Thread created:", threadId);
+        log(`Thread created: ${threadId}`);
 
+        log(`Sending message to thread...`);
         // Добавляем сообщение в тред
         await axios.post(PROXY_URL, {
             method: 'POST',
@@ -436,7 +465,9 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
                 content: message
             }
         });
+        log(`Message sent to thread`);
 
+        log(`Starting run...`);
         // Запускаем выполнение
         const runResponse = await axios.post(PROXY_URL, {
             method: 'POST',
@@ -445,9 +476,8 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
                 assistant_id: ASSISTANT_ID
             }
         });
-
         const runId = runResponse.data.id;
-        console.log("Run started:", runId);
+        log(`Run started: ${runId}`);
 
         // Ожидаем завершения выполнения
         let runStatus;
@@ -456,15 +486,16 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
         do {
             await new Promise(resolve => setTimeout(resolve, 2000));
             try {
+                log(`Checking run status...`);
                 const statusResponse = await axios.post(PROXY_URL, {
                     method: 'GET',
                     path: `/v1/threads/${threadId}/runs/${runId}`
                 });
                 runStatus = statusResponse.data.status;
-                console.log("Run status:", runStatus);
+                log(`Run status: ${runStatus}`);
                 retries = 0;
             } catch (error) {
-                console.error('Error checking run status:', error);
+                log(`Error checking run status: ${error}`);
                 retries++;
                 if (retries >= maxRetries) {
                     throw new Error('Max retries reached while checking run status');
@@ -472,13 +503,13 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
             }
         } while (runStatus === 'in_progress' && retries < maxRetries);
 
+        log(`Retrieving messages...`);
         // Получаем сообщения
         const messagesResponse = await axios.post(PROXY_URL, {
             method: 'GET',
             path: `/v1/threads/${threadId}/messages`
         });
-
-        console.log("Messages received:", messagesResponse.data);
+        log(`Messages received`);
 
         const assistantMessage = messagesResponse.data.data.find(msg => msg.role === 'assistant');
         if (assistantMessage && assistantMessage.content && assistantMessage.content.length > 0) {
@@ -488,22 +519,15 @@ async function getDestinationInfo(city, country, startDate, endDate, nights) {
             throw new Error('No valid response from assistant');
         }
     } catch (error) {
-        console.error('Detailed error:', error);
-        let errorMessage = 'An error occurred while loading destination information: ';
+        log(`Error occurred: ${error.message}`);
         if (axios.isAxiosError(error)) {
             if (error.response) {
-                console.error('Error response:', error.response.data);
-                errorMessage += `${error.message}. Response: ${JSON.stringify(error.response.data)}`;
+                log(`Error response: ${JSON.stringify(error.response.data)}`);
             } else if (error.request) {
-                console.error('Error request:', error.request);
-                errorMessage += 'The request was made but no response was received. Please check your internet connection and try again.';
-            } else {
-                errorMessage += error.message;
+                log(`Error request: ${error.request}`);
             }
-        } else {
-            errorMessage += error.message;
         }
-        flightsDiv.innerHTML = errorMessage;
+        flightsDiv.innerHTML += `<div>An error occurred. Please check the console for more details.</div>`;
     }
 }
         function displayDestinationInfo(info) {
