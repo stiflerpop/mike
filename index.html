@@ -1,686 +1,82 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ качества воды из скважины</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        .parameter {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            padding: 15px;
-        }
-        .parameter h3 {
-            margin-top: 0;
-            cursor: pointer;
-        }
-        .parameter-content {
-            display: none;
-        }
-        .status {
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 3px;
-        }
-        .status-ok {
-            background-color: #2ecc71;
-            color: white;
-        }
-        .status-warning {
-            background-color: #f39c12;
-            color: white;
-        }
-        .status-bad {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .chart-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-        }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            border-bottom: 1px dotted black;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
-</head>
-<body>
-    <h1>Анализ качества воды из скважины</h1>
-    
-    <h2>Общая информация</h2>
-    <p>Дата анализа: 07.08.2024</p>
-    <p>Источник воды: скважина в СНТ «Электросила-8», массив «Красницы»</p>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>5 Фоток — Квадратные наклейки</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/workspace/style.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Выберите 5 фото</h1>
+      <p>Загрузите фото, скадрируйте квадрат — мы распечатаем наклейки.</p>
+    </header>
 
-    <h2>Параметры качества воды</h2>
-	<div class="parameter">
-    <h3 onclick="toggleContent(this)">1. Цветность</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 100 единиц цветности</p>
-        <p><strong>Норматив:</strong> Не более 20 единиц цветности</p>
-        <p><strong>Статус:</strong> <span class="status status-bad">Значительно превышает норму</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Ухудшает эстетические свойства воды</li>
-            <li>Может указывать на загрязнение органическими веществами</li>
-            <li>Снижает эффективность обеззараживания воды</li>
-        </ul>
-        
-        <h4>Возможные причины:</h4>
-        <ul>
-            <li>Наличие растворенных органических веществ</li>
-            <li>Высокое содержание соединений железа и марганца</li>
-            <li>Гуминовые вещества из почвы</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Установка системы фильтрации с активированным углем</li>
-            <li>Аэрация воды для окисления соединений железа и марганца</li>
-            <li>Проведение дополнительных исследований для выявления источника загрязнения</li>
-        </ul>
-    </div>
-</div>
+    <main class="grid">
+      <div class="slot" data-slot="0">
+        <input class="file" type="file" accept="image/*" aria-label="Загрузить фото 1">
+        <div class="canvas-wrap">
+          <canvas></canvas>
+          <div class="placeholder">+</div>
+        </div>
+        <div class="controls hidden">
+          <input type="range" min="0.5" max="3" step="0.01" value="1" class="zoom" aria-label="Масштаб">
+          <button class="reset" type="button">Сброс</button>
+        </div>
+      </div>
+      <div class="slot" data-slot="1">
+        <input class="file" type="file" accept="image/*" aria-label="Загрузить фото 2">
+        <div class="canvas-wrap">
+          <canvas></canvas>
+          <div class="placeholder">+</div>
+        </div>
+        <div class="controls hidden">
+          <input type="range" min="0.5" max="3" step="0.01" value="1" class="zoom" aria-label="Масштаб">
+          <button class="reset" type="button">Сброс</button>
+        </div>
+      </div>
+      <div class="slot" data-slot="2">
+        <input class="file" type="file" accept="image/*" aria-label="Загрузить фото 3">
+        <div class="canvas-wrap">
+          <canvas></canvas>
+          <div class="placeholder">+</div>
+        </div>
+        <div class="controls hidden">
+          <input type="range" min="0.5" max="3" step="0.01" value="1" class="zoom" aria-label="Масштаб">
+          <button class="reset" type="button">Сброс</button>
+        </div>
+      </div>
+      <div class="slot" data-slot="3">
+        <input class="file" type="file" accept="image/*" aria-label="Загрузить фото 4">
+        <div class="canvas-wrap">
+          <canvas></canvas>
+          <div class="placeholder">+</div>
+        </div>
+        <div class="controls hidden">
+          <input type="range" min="0.5" max="3" step="0.01" value="1" class="zoom" aria-label="Масштаб">
+          <button class="reset" type="button">Сброс</button>
+        </div>
+      </div>
+      <div class="slot" data-slot="4">
+        <input class="file" type="file" accept="image/*" aria-label="Загрузить фото 5">
+        <div class="canvas-wrap">
+          <canvas></canvas>
+          <div class="placeholder">+</div>
+        </div>
+        <div class="controls hidden">
+          <input type="range" min="0.5" max="3" step="0.01" value="1" class="zoom" aria-label="Масштаб">
+          <button class="reset" type="button">Сброс</button>
+        </div>
+      </div>
+    </main>
 
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">2. Мутность</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 3,5 ЕМФ</p>
-        <p><strong>Норматив:</strong> 2,6 ЕМФ</p>
-        <p><strong>Статус:</strong> <span class="status status-warning">Превышает норму</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Ухудшает внешний вид воды</li>
-            <li>Может снижать эффективность обеззараживания</li>
-            <li>Способствует развитию микроорганизмов</li>
-        </ul>
-        
-        <h4>Возможные причины:</h4>
-        <ul>
-            <li>Наличие взвешенных частиц (глина, ил, органические вещества)</li>
-            <li>Недостаточная фильтрация воды в природных условиях</li>
-            <li>Возможные проблемы с конструкцией скважины</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Установка механического фильтра для удаления взвешенных частиц</li>
-            <li>Прокачка скважины</li>
-            <li>Проверка и возможная реконструкция скважины</li>
-        </ul>
-    </div>
-</div>
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">3. Запах</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 
-            При 20°C: 3 балла, землистый
-            При 60°C: 4 балла, землистый
-        </p>
-        <p><strong>Норматив:</strong> Не более 3 баллов</p>
-        <p><strong>Статус:</strong> <span class="status status-bad">Превышает норму, особенно при нагревании</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Существенно ухудшает органолептические свойства воды</li>
-            <li>Может указывать на загрязнение органическими веществами</li>
-            <li>Возможно наличие сульфатредуцирующих бактерий (запах сероводорода при отборе)</li>
-        </ul>
-        
-        <h4>Возможные причины:</h4>
-        <ul>
-            <li>Микробиологические процессы в воде</li>
-            <li>Разложение органических веществ</li>
-            <li>Геологические особенности водоносного горизонта</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Аэрация воды для удаления сероводорода</li>
-            <li>Дезинфекция скважины и системы водоснабжения</li>
-            <li>Установка системы фильтрации с активированным углем</li>
-            <li>Проведение микробиологического анализа воды</li>
-        </ul>
-    </div>
-</div>
+    <footer class="app-footer">
+      <button id="export" type="button">Скачать предпросмотр (PNG)</button>
+    </footer>
 
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">4. pH (Водородный показатель)</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 7,83</p>
-        <p><strong>Норматив:</strong> 6,0 – 9,0</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Нейтральная или слабощелочная среда</li>
-            <li>Благоприятно для большинства бытовых и питьевых целей</li>
-        </ul>
-        
-        <h4>Значение pH для здоровья:</h4>
-        <ul>
-            <li>pH в диапазоне 6,5-8,5 считается оптимальным для питьевой воды</li>
-            <li>Вода с pH > 8,5 может иметь щелочной вкус и способствовать образованию накипи</li>
-            <li>Вода с pH < 6,5 может быть коррозионной для труб и сантехники</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной коррекции не требуется</li>
-            <li>Регулярный мониторинг для отслеживания возможных изменений</li>
-        </ul>
-    </div>
-</div>
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">5. Общая минерализация</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 136 ppm</p>
-        <p><strong>Норматив:</strong> Не более 1000 ppm</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Умеренное содержание растворенных веществ</li>
-            <li>Подходит для питьевых целей</li>
-        </ul>
-        
-        <h4>Значение минерализации:</h4>
-        <ul>
-            <li>Низкая минерализация (< 100 ppm): может быть менее полезной для здоровья</li>
-            <li>Средняя минерализация (100-500 ppm): оптимальна для питья</li>
-            <li>Высокая минерализация (> 1000 ppm): может влиять на вкус и иметь слабительный эффект</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Регулярный контроль для отслеживания возможных изменений</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">6. Общая жёсткость</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 6,6 ммоль-экв/л</p>
-        <p><strong>Норматив:</strong> 7 ммоль-экв/л</p>
-        <p><strong>Статус:</strong> <span class="status status-warning">В пределах нормы, но близко к верхней границе</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Может вызывать образование накипи на нагревательных элементах</li>
-            <li>Снижает эффективность моющих средств</li>
-            <li>Возможно появление белого налета на сантехнике и посуде</li>
-        </ul>
-        
-        <h4>Классификация воды по жесткости:</h4>
-        <ul>
-            <li>Мягкая: < 2 ммоль-экв/л</li>
-            <li>Средней жесткости: 2-6 ммоль-экв/л</li>
-            <li>Жесткая: 6-10 ммоль-экв/л</li>
-            <li>Очень жесткая: > 10 ммоль-экв/л</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Установка системы умягчения воды, если планируется использование для бытовых нужд</li>
-            <li>Регулярная очистка нагревательных элементов бытовой техники</li>
-            <li>Использование специальных средств для посудомоечных и стиральных машин</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">7. Перманганатная окисляемость</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 23,2 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 5 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-bad">Значительно превышает норматив</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Указывает на высокое содержание органических веществ в воде</li>
-            <li>Повышает риск образования вредных побочных продуктов при хлорировании</li>
-            <li>Может способствовать развитию микроорганизмов</li>
-        </ul>
-        
-        <h4>Возможные причины:</h4>
-        <ul>
-            <li>Загрязнение воды органическими веществами</li>
-            <li>Недостаточная природная фильтрация</li>
-            <li>Возможное влияние сельскохозяйственной деятельности или других антропогенных факторов</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Установка системы фильтрации с активированным углем</li>
-            <li>Проверка возможных источников загрязнения вблизи скважины</li>
-            <li>Рассмотрение возможности углубления скважины для доступа к более чистым водоносным горизонтам</li>
-            <li>Проведение дополнительных микробиологических исследований</li>
-        </ul>
-    </div>
-</div>
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">8. Сульфаты</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 46 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 500 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>При данной концентрации существенного влияния не оказывает</li>
-            <li>Высокие концентрации могут придавать воде горьковатый привкус</li>
-        </ul>
-        
-        <h4>Значение для здоровья:</h4>
-        <ul>
-            <li>Умеренное количество сульфатов необходимо для нормального функционирования организма</li>
-            <li>Очень высокие концентрации могут оказывать слабительный эффект</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Регулярный контроль в рамках общего мониторинга качества воды</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">9. Аммоний</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 0 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 2,5 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Отсутствие аммония является положительным показателем</li>
-            <li>Наличие аммония может указывать на свежее органическое загрязнение</li>
-        </ul>
-        
-        <h4>Значение для здоровья:</h4>
-        <ul>
-            <li>Аммоний сам по себе не токсичен в низких концентрациях</li>
-            <li>Высокие концентрации могут влиять на эффективность дезинфекции воды</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Продолжать регулярный мониторинг</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">10. Нитраты</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 0 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 45 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>Отсутствие нитратов является положительным показателем</li>
-            <li>Высокое содержание нитратов может указывать на загрязнение воды</li>
-        </ul>
-        
-        <h4>Значение для здоровья:</h4>
-        <ul>
-            <li>Высокие концентрации нитратов опасны для здоровья, особенно для детей</li>
-            <li>Могут вызывать метгемоглобинемию (нарушение транспорта кислорода в крови)</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Продолжать регулярный мониторинг, особенно если вблизи есть сельскохозяйственные угодья</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">11. Фосфаты</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 1,0 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 3,5 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>При данной концентрации существенного влияния не оказывает</li>
-            <li>Высокие концентрации могут способствовать развитию водорослей</li>
-        </ul>
-        
-        <h4>Значение для окружающей среды:</h4>
-        <ul>
-            <li>Фосфаты - важный питательный элемент для растений и водорослей</li>
-            <li>Избыток фосфатов может привести к эвтрофикации водоемов</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Регулярный контроль в рамках общего мониторинга качества воды</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">12. Хлориды</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 21,3 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 350 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>При данной концентрации существенного влияния не оказывает</li>
-            <li>Высокие концентрации могут придавать воде солоноватый вкус</li>
-        </ul>
-        
-        <h4>Значение для здоровья:</h4>
-        <ul>
-            <li>Хлориды необходимы для нормального функционирования организма</li>
-            <li>Очень высокие концентрации могут вызывать коррозию металлических труб</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Регулярный контроль в рамках общего мониторинга качества воды</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">13. Железо общее</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 0,01 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 0,3 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>При данной концентрации существенного влияния не оказывает</li>
-            <li>Высокие концентрации могут придавать воде металлический привкус и желтоватый оттенок</li>
-        </ul>
-        
-        <h4>Значение для здоровья:</h4>
-        <ul>
-            <li>Железо необходимо для нормального функционирования организма</li>
-            <li>Избыток железа может вызывать окрашивание белья и сантехники</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Регулярный контроль, особенно учитывая высокую цветность воды</li>
-        </ul>
-    </div>
-</div>
-
-<div class="parameter">
-    <h3 onclick="toggleContent(this)">14. Марганец</h3>
-    <div class="parameter-content">
-        <p><strong>Результат:</strong> 0,01 мг/л</p>
-        <p><strong>Норматив:</strong> Не более 0,1 мг/л</p>
-        <p><strong>Статус:</strong> <span class="status status-ok">В пределах нормы</span></p>
-        
-        <h4>Влияние на качество воды:</h4>
-        <ul>
-            <li>При данной концентрации существенного влияния не оказывает</li>
-            <li>Высокие концентрации могут придавать воде металлический привкус и темный оттенок</li>
-        </ul>
-        
-        <h4>Значение для здоровья:</h4>
-        <ul>
-            <li>Марганец необходим для нормального функционирования организма в малых количествах</li>
-            <li>Избыток марганца может вызывать окрашивание белья и сантехники</li>
-        </ul>
-        
-        <h4>Рекомендации:</h4>
-        <ul>
-            <li>Специальной обработки не требуется</li>
-            <li>Регулярный контроль в рамках общего мониторинга качества воды</li>
-        </ul>
-    </div>
-</div>
-<h2>Общие выводы и рекомендации</h2>
-
-<h3>Пригодность воды для различных целей:</h3>
-<table>
-    <tr>
-        <th>Цель использования</th>
-        <th>Статус</th>
-        <th>Комментарий</th>
-    </tr>
-    <tr>
-        <td>Для питья</td>
-        <td><span class="status status-bad">Не пригодна</span></td>
-        <td>Требуется дополнительная очистка</td>
-    </tr>
-    <tr>
-        <td>Для приготовления пищи</td>
-        <td><span class="status status-bad">Не рекомендуется</span></td>
-        <td>Требуется очистка</td>
-    </tr>
-    <tr>
-        <td>Для мытья посуды</td>
-        <td><span class="status status-warning">Допустимо</span></td>
-        <td>Может вызывать появление разводов</td>
-    </tr>
-    <tr>
-        <td>Для душа и умывания</td>
-        <td><span class="status status-warning">Допустимо</span></td>
-        <td>Может вызывать раздражение кожи и глаз</td>
-    </tr>
-    <tr>
-        <td>Для полива растений</td>
-        <td><span class="status status-ok">Пригодна</span></td>
-        <td>Без ограничений</td>
-    </tr>
-    <tr>
-        <td>Для технических нужд</td>
-        <td><span class="status status-ok">Пригодна</span></td>
-        <td>Без ограничений</td>
-    </tr>
-</table>
-
-<h3>Основные проблемы:</h3>
-<ul>
-    <li>Высокая цветность (100 единиц при норме 20)</li>
-    <li>Повышенная мутность (3,5 ЕМФ при норме 2,6)</li>
-    <li>Интенсивный запах (4 балла при норме 3)</li>
-    <li>Высокая перманганатная окисляемость (23,2 мг/л при норме 5)</li>
-</ul>
-
-<h3>Рекомендации по улучшению качества воды:</h3>
-<ol>
-    <li>Установка комплексной системы очистки, включающей:
-        <ul>
-            <li>Механическую фильтрацию (для снижения мутности)</li>
-            <li>Аэрацию (для удаления запахов и окисления железа)</li>
-            <li>Сорбцию на активированном угле (для снижения цветности и окисляемости)</li>
-            <li>Умягчение (для предотвращения образования накипи)</li>
-        </ul>
-    </li>
-    <li>Проведение дезинфекции скважины и системы водоснабжения</li>
-    <li>Регулярный контроль качества воды (не реже 1 раза в год)</li>
-    <li>Проведение дополнительных исследований на микробиологические показатели</li>
-    <li>Прокачка скважины для улучшения качества воды и увеличения дебита</li>
-    <li>Проверка конструкции скважины на предмет возможных дефектов</li>
-    <li>Анализ окружающей территории для выявления потенциальных источников загрязнения</li>
-</ol>
-
-<h2>Прокачка скважины</h2>
-<p>Прокачка скважины - это важный процесс, который помогает улучшить качество воды и увеличить производительность скважины. Вот основная информация о прокачке:</p>
-
-<h3>Что такое прокачка скважины?</h3>
-<p>Прокачка скважины - это процесс интенсивной откачки воды из скважины с целью очистки ствола скважины и прилегающего водоносного слоя от мелких частиц породы, ила и других загрязнений.</p>
-
-<h3>Зачем нужна прокачка?</h3>
-<ul>
-    <li>Улучшение качества воды</li>
-    <li>Увеличение дебита скважины</li>
-    <li>Продление срока службы скважины и насосного оборудования</li>
-    <li>Удаление загрязнений, попавших в скважину при бурении</li>
-</ul>
-
-<h3>Когда нужно проводить прокачку?</h3>
-<ul>
-    <li>После завершения бурения новой скважины</li>
-    <li>При снижении производительности существующей скважины</li>
-    <li>При ухудшении качества воды (увеличение мутности, появление песка)</li>
-    <li>Как профилактическая мера каждые 3-5 лет</li>
-</ul>
-
-<h3>Методы прокачки:</h3>
-<ol>
-    <li><strong>Эрлифтная прокачка:</strong> Используется сжатый воздух для подъема воды и очистки скважины.</li>
-    <li><strong>Прокачка насосом:</strong> Используется мощный насос для интенсивной откачки воды.</li>
-    <li><strong>Импульсная прокачка:</strong> Чередование откачки воды и подачи воздуха для создания гидравлических ударов.</li>
-</ol>
-
-<p>В вашем случае, учитывая повышенную мутность воды, рекомендуется провести прокачку скважины для улучшения качества воды и возможного увеличения ее дебита.</p>
-<h2>Визуализация результатов анализа</h2>
-
-<div class="chart-container">
-    <canvas id="exceedingParamsChart"></canvas>
-</div>
-
-<div class="chart-container">
-    <canvas id="overallQualityChart"></canvas>
-</div>
-
-<script>
-    function toggleContent(element) {
-        var content = element.nextElementSibling;
-        if (content.style.display === "block") {
-            content.style.display = "none";
-        } else {
-            content.style.display = "block";
-        }
-    }
-
-    // Диаграмма превышающих норму параметров
-    var exceedingParamsCtx = document.getElementById('exceedingParamsChart').getContext('2d');
-    var exceedingParamsChart = new Chart(exceedingParamsCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Цветность', 'Мутность', 'Запах', 'Окисляемость'],
-            datasets: [{
-                label: 'Фактическое значение',
-                data: [100, 3.5, 4, 23.2],
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Норматив',
-                data: [20, 2.6, 3, 5],
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Параметры, превышающие норму'
-                }
-            }
-        }
-    });
-
-    // Круговая диаграмма общего качества воды
-    var overallQualityCtx = document.getElementById('overallQualityChart').getContext('2d');
-    var overallQualityChart = new Chart(overallQualityCtx, {
-        type: 'pie',
-        data: {
-            labels: ['В норме', 'Превышает норму', 'Значительно превышает норму'],
-            datasets: [{
-                data: [10, 1, 3],
-                backgroundColor: [
-                    'rgba(75, 192, 192, 0.5)',
-                    'rgba(255, 206, 86, 0.5)',
-                    'rgba(255, 99, 132, 0.5)'
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(255, 99, 132, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Общая оценка качества воды'
-                }
-            }
-        }
-    });
-</script>
-</body>
+    <script src="/workspace/script.js"></script>
+  </body>
 </html>
